@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stream Control — Slack</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #1a1d21;
+    --surface: #222529;
+    --surface2: #2a2d31;
+    --border: #383b42;
+    --text: #d1d2d3;
+    --text-muted: #8b9196;
+    --text-bright: #f2f3f5;
+    --accent: #c0175d;
+    --accent-hover: #d9185e;
+    --accent-press: #a01550;
+    --mention: #1d9bd1;
+    --mention-bg: rgba(29,155,209,0.15);
+    --purple-bar: #7c5cbf;
+    --timestamp: #8b9196;
+    --hover-bg: rgba(255,255,255,0.04);
+  }
+
+  body {
+    font-family: 'Lato', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 24px;
+  }
+
+  /* ── Channel header ── */
+  .channel-header {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .channel-header .hash { font-size: 22px; color: var(--text-muted); font-weight: 900; }
+  .channel-header .name { font-size: 17px; font-weight: 900; color: var(--text-bright); }
+  .channel-header .topic {
+    font-size: 13px; color: var(--text-muted);
+    margin-left: 4px; padding-left: 12px;
+    border-left: 1px solid var(--border);
+  }
+
+  /* ── Messages ── */
+  .messages { width: 100%; max-width: 720px; display: flex; flex-direction: column; gap: 2px; }
+
+  .date-divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 20px 0; color: var(--text-muted);
+    font-size: 12px; font-weight: 700;
+  }
+  .date-divider::before, .date-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* ── Single message row ── */
+  .message {
+    display: flex; gap: 12px; padding: 8px 12px;
+    border-radius: 8px;
+    transition: background 0.12s ease;
+  }
+  .message:hover { background: var(--hover-bg); }
+
+  .avatar {
+    width: 36px; height: 36px; border-radius: 6px;
+    flex-shrink: 0; margin-top: 2px;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 14px; color: #fff;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .message-body { flex: 1; min-width: 0; }
+
+  .message-meta {
+    display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px;
+  }
+  .sender { font-weight: 900; font-size: 15px; color: var(--text-bright); cursor: pointer; }
+  .sender:hover { text-decoration: underline; }
+
+  .badge {
+    font-size: 10px; font-weight: 700;
+    background: var(--surface2); color: var(--text-muted);
+    border: 1px solid var(--border); border-radius: 3px;
+    padding: 1px 5px; letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .timestamp { font-size: 12px; color: var(--timestamp); }
+
+  .message-text { font-size: 15px; line-height: 1.5; color: var(--text); }
+  .message-title { font-weight: 700; color: var(--text-bright); font-size: 15px; }
+  .mention {
+    color: var(--mention); background: var(--mention-bg);
+    border-radius: 3px; padding: 0 2px; font-weight: 700;
+  }
+
+  /* ── App card (purple bar) ── */
+  .app-card {
+    border-left: 3px solid var(--purple-bar);
+    padding: 10px 14px;
+    margin-left: 48px;
+    background: rgba(124,92,191,0.05);
+    border-radius: 0 8px 8px 0;
+  }
+
+  /* ── Buttons ── */
+  .buttons-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+  .action-btn {
+    background: var(--accent); color: #fff; border: none;
+    border-radius: 6px; padding: 8px 16px;
+    font-family: 'Lato', sans-serif; font-size: 14px; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.01em;
+    transition: background 0.12s, transform 0.08s, box-shadow 0.12s;
+    position: relative;
+  }
+  .action-btn:hover { background: var(--accent-hover); box-shadow: 0 2px 8px rgba(192,23,93,0.4); }
+  .action-btn:active { background: var(--accent-press); transform: scale(0.97); }
+  .action-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .action-btn.used { opacity: 0.4; cursor: not-allowed; }
+
+  .action-btn.loading { color: transparent; pointer-events: none; }
+  .action-btn.loading::after {
+    content: ''; position: absolute;
+    top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.35);
+    border-top-color: #fff; border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+  /* ── Reply slide-in ── */
+  .reply { animation: slideIn 0.22s cubic-bezier(0.34,1.2,0.64,1) both; }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Status dot ── */
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+  .dot-green  { background: #2bac76; }
+  .dot-yellow { background: #e8a838; }
+  .dot-red    { background: #e01e5a; }
+  .dot-blue   { background: #1d9bd1; }
+
+  /* ── Reactions ── */
+  .reactions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .reaction {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 2px 8px;
+    font-size: 13px; cursor: pointer;
+    transition: background 0.12s;
+  }
+  .reaction:hover { background: var(--border); }
+  .reaction-count { color: var(--text-muted); font-weight: 700; font-size: 12px; }
+
+  /* ── Bitrate table ── */
+  .bitrate-table {
+    font-family: monospace; font-size: 13px;
+    background: #111315; border-radius: 6px;
+    padding: 12px 16px; margin-top: 8px; line-height: 2;
+    border: 1px solid var(--border);
+  }
+  .bitrate-table .label { color: var(--text-muted); }
+  .bitrate-table .val-green  { color: #2bac76; }
+  .bitrate-table .val-yellow { color: #e8a838; }
+  .bitrate-table .val-white  { color: var(--text-bright); }
+
+  /* ── Loading skeleton ── */
+  #loading {
+    color: var(--text-muted); font-size: 14px; padding: 40px 0;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border); border-top-color: var(--text-muted);
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+  }
+
+  #error { color: #e01e5a; font-size: 14px; padding: 40px 0; }
+</style>
+</head>
+<body>
+
+<div id="loading"><div class="spinner"></div> Loading config…</div>
+<div id="error" style="display:none;"></div>
+<div id="app" style="display:none; width:100%; display:none; flex-direction:column; align-items:center;">
+  <div class="channel-header">
+    <span class="hash">#</span>
+    <span class="name" id="ch-name"></span>
+    <span class="topic" id="ch-topic"></span>
+  </div>
+  <div class="messages" id="messages">
+    <div class="date-divider">Today</div>
+  </div>
+</div>
+
+<script>
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+const pad = n => String(n).padStart(2,'0');
+const nowTime = () => { const t = new Date(); return `${pad(t.getHours())}:${pad(t.getMinutes())}`; };
+
+function makeAvatar(name, avatarFile, fallbackColor) {
+  const el = document.createElement('div');
+  el.className = 'avatar';
+  if (avatarFile) {
+    el.style.background = 'transparent';
+    const img = document.createElement('img');
+    img.src = avatarFile;
+    img.alt = name;
+    img.onerror = () => {
+      // fallback to initial if image not found
+      img.remove();
+      el.style.background = fallbackColor || '#555';
+      el.textContent = name[0].toUpperCase();
+    };
+    el.appendChild(img);
+  } else {
+    el.style.background = fallbackColor || '#555';
+    el.textContent = name[0].toUpperCase();
+  }
+  return el;
+}
+
+function makeBitrateTable(type) {
+  const isBackup = type === 'backup';
+  const bufMs  = isBackup ? '88ms' : '217ms';
+  const bufCls = isBackup ? 'val-green' : 'val-yellow';
+  const bufNote = isBackup ? '✓ healthy' : '⚠ slightly high';
+  return `
+    <div class="bitrate-table">
+      <div><span class="label">${isBackup ? 'Backup:' : 'Source:'} </span><span class="val-green">● CONNECTED</span></div>
+      <div><span class="label">Bitrate: </span><span class="val-white">${isBackup ? '8,380' : '8,412'} kbps</span></div>
+      <div><span class="label">Codec:   </span><span class="val-white">H.264 / AAC</span></div>
+      <div><span class="label">FPS:     </span><span class="val-white">50.00</span></div>
+      <div><span class="label">Buffer:  </span><span class="${bufCls}">${bufMs} ${bufNote}</span></div>
+    </div>`;
+}
+
+// ── Render helpers ────────────────────────────────────────────────────────────
+
+function renderMessage({ avatar, name, badge, time, children }) {
+  const row = document.createElement('div');
+  row.className = 'message';
+  row.appendChild(avatar);
+  const body = document.createElement('div');
+  body.className = 'message-body';
+  const meta = document.createElement('div');
+  meta.className = 'message-meta';
+  meta.innerHTML = `
+    <span class="sender">${name}</span>
+    ${badge ? `<span class="badge">${badge}</span>` : ''}
+    <span class="timestamp">${time}</span>`;
+  body.appendChild(meta);
+  children.forEach(c => body.appendChild(c));
+  row.appendChild(body);
+  return row;
+}
+
+function appendToMessages(el) {
+  const msgs = document.getElementById('messages');
+  msgs.appendChild(el);
+  el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+
+// ── Main ─────────────────────────────────────────────────────────────────────
+
+async function init() {
+  let cfg;
+  try {
+    const res = await fetch('config.json?_=' + Date.now());
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    cfg = await res.json();
+  } catch (e) {
+    document.getElementById('loading').style.display = 'none';
+    const err = document.getElementById('error');
+    err.style.display = 'block';
+    err.textContent = '⚠ Could not load config.json — make sure it is in the same folder as this HTML file. (' + e.message + ')';
+    return;
+  }
+
+  document.getElementById('loading').style.display = 'none';
+  const app = document.getElementById('app');
+  app.style.display = 'flex';
+
+  // Channel header
+  document.getElementById('ch-name').textContent  = cfg.channel.name;
+  document.getElementById('ch-topic').textContent = cfg.channel.topic;
+
+  const msgs = document.getElementById('messages');
+
+  // ── Bot header row (just avatar + name) ──
+  const botAvatar = makeAvatar(cfg.bot.name, cfg.bot.avatar, '#4a154b');
+  const botRow = renderMessage({
+    avatar: botAvatar,
+    name: cfg.bot.name,
+    badge: cfg.bot.badge,
+    time: cfg.card.time,
+    children: [],
+  });
+  msgs.appendChild(botRow);
+
+  // ── App card (purple bar) ──
+  const card = document.createElement('div');
+  card.className = 'app-card';
+  card.id = 'main-card';
+
+  const cardTitle = document.createElement('div');
+  cardTitle.className = 'message-title';
+  cardTitle.textContent = cfg.card.title;
+
+  const cardBody = document.createElement('div');
+  cardBody.className = 'message-text';
+  cardBody.style.marginTop = '6px';
+  cardBody.innerHTML = `Hey <span class="mention">@${cfg.card.mention}</span> ${cfg.card.body}`;
+
+  const btnRow = document.createElement('div');
+  btnRow.className = 'buttons-row';
+  btnRow.id = 'btn-row';
+
+  card.appendChild(cardTitle);
+  card.appendChild(cardBody);
+  card.appendChild(btnRow);
+  msgs.appendChild(card);
+
+  // ── Render buttons from config ──
+  const allBtns = [];
+
+  cfg.buttons.forEach(btnCfg => {
+    const btn = document.createElement('button');
+    btn.className = 'action-btn';
+    btn.textContent = btnCfg.label;
+
+    btn.addEventListener('click', () => {
+      btn.classList.add('loading');
+      allBtns.forEach(b => b.disabled = true);
+
+      setTimeout(() => {
+        btn.classList.remove('loading');
+
+        const r = btnCfg.reply;
+
+        if (r.disableAll) {
+          allBtns.forEach(b => { b.disabled = true; b.classList.add('used'); });
+        } else {
+          allBtns.forEach(b => { b.disabled = false; b.classList.remove('used'); });
+          btn.disabled = true;
+          btn.classList.add('used');
+        }
+
+        appendReply(cfg, btnCfg.id, r);
+      }, 600 + Math.random() * 400);
+    });
+
+    btnRow.appendChild(btn);
+    allBtns.push(btn);
+  });
+}
+
+function appendReply(cfg, btnId, r) {
+  const responder = cfg.responder;
+  const avatar = makeAvatar(responder.name, responder.avatar || '', responder.avatarColor || '#555');
+
+  // Build children
+  const titleEl = document.createElement('div');
+  titleEl.className = 'message-title';
+  titleEl.style.marginBottom = '4px';
+  titleEl.innerHTML = `<span class="dot dot-${r.dot}"></span>${r.title}`;
+
+  const textEl = document.createElement('div');
+  textEl.className = 'message-text';
+
+  // Special built-in templates
+  if (r.text === 'SOURCE_BITRATE_TABLE') {
+    textEl.innerHTML = makeBitrateTable('source');
+  } else if (r.text === 'BACKUP_BITRATE_TABLE') {
+    textEl.innerHTML = makeBitrateTable('backup');
+  } else {
+    textEl.textContent = r.text;
+  }
+
+  const children = [titleEl, textEl];
+
+  if (r.reactions && r.reactions.length) {
+    const reactRow = document.createElement('div');
+    reactRow.className = 'reactions';
+    r.reactions.forEach(rx => {
+      const span = document.createElement('span');
+      span.className = 'reaction';
+      span.textContent = rx;
+      reactRow.appendChild(span);
+    });
+    children.push(reactRow);
+  }
+
+  const row = renderMessage({
+    avatar,
+    name: responder.name,
+    badge: null,
+    time: nowTime(),
+    children,
+  });
+  row.classList.add('reply');
+
+  appendToMessages(row);
+}
+
+init();
+</script>
+</body>
+</html>
