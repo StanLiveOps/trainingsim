@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Pipeline — Live Ops Training</title>
+<title>LiveOps TrainingSim</title>
 <link rel="icon" type="image/png" href="../../images/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
@@ -53,7 +53,7 @@ body {
 .topbar-sep { color: var(--border); font-size: 18px; }
 
 /* ── Topbar nav menu ── */
-.topbar { justify-content: space-between; }
+.topbar { gap: 10px; }
 .topbar-left { display: flex; align-items: center; gap: 12px; }
 .topbar-menu-btn {
   background: none; border: 1px solid var(--border);
@@ -228,20 +228,19 @@ body {
   transition: background 0.12s, border-color 0.12s;
 }
 .btn-secondary:hover { background: var(--hover-bg); border-color: var(--text-muted); }
+
 </style>
 </head>
 <body>
 
 <nav class="topbar">
-  <div class="topbar-left">
-    <a class="topbar-back" href="../../index.html">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      Home
-    </a>
-    <span class="topbar-sep">·</span>
-    <span class="topbar-title">The Pipeline</span>
-  </div>
-  <button class="topbar-menu-btn" id="topbar-menu-btn" aria-label="Open menu">
+  <a class="topbar-back" href="../../index.html">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    Home
+  </a>
+  <span class="topbar-sep">·</span>
+  <span class="topbar-title">The Pipeline</span>
+  <button class="topbar-menu-btn" id="topbar-menu-btn" aria-label="Open menu" style="margin-left:auto">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
 </nav>

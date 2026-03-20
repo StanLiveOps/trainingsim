@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Introduction — Live Ops Training</title>
+<title>LiveOps TrainingSim</title>
 <link rel="icon" type="image/png" href="../../images/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
@@ -57,7 +57,7 @@ body {
 .topbar-sep { color: var(--border); font-size: 18px; }
 
 /* ── Topbar nav menu ── */
-.topbar { justify-content: space-between; }
+.topbar { gap: 10px; }
 .topbar-left { display: flex; align-items: center; gap: 12px; }
 .topbar-menu-btn {
   background: none; border: 1px solid var(--border);
@@ -195,20 +195,50 @@ body {
   transition: background 0.12s, border-color 0.12s;
 }
 .btn-secondary:hover { background: var(--hover-bg); border-color: var(--text-muted); }
+
+/* ── Anatomy of a Stream Title ── */
+.anatomy-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.anatomy-tab {
+  padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border);
+  font-family: 'Lato', sans-serif; font-size: 12px; font-weight: 700;
+  cursor: pointer; background: var(--surface2); color: var(--text-muted);
+  transition: all 0.12s;
+}
+.anatomy-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.anatomy-tab:hover:not(.active) { background: var(--border); color: var(--text-bright); }
+.anatomy-scroll { overflow-x: auto; overflow-y: visible; padding-bottom: 4px; }
+.anatomy-stage {
+  position: relative; display: inline-block; min-width: 100%;
+  padding-top: 72px; padding-bottom: 64px;
+}
+.anatomy-title-row { font-size: 17px; font-weight: 700; color: var(--text-bright); white-space: nowrap; line-height: 1; }
+.hp { display: inline-block; position: relative; border-bottom: 2px solid currentColor; padding-bottom: 2px; }
+.ann-above {
+  position: absolute; bottom: calc(100% + 12px); left: 0; right: 0;
+  display: flex; flex-direction: column; align-items: center;
+  pointer-events: none; opacity: 0; animation: annFadeIn 0.3s ease both;
+}
+@keyframes annFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.ann-lbl { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; margin-bottom: 3px; line-height: 1; }
+.ann-bar-top { width: 100%; height: 7px; border: 2px solid currentColor; border-bottom: none; border-radius: 3px 3px 0 0; }
+.ann-below-item {
+  position: absolute; display: flex; flex-direction: column; align-items: center;
+  pointer-events: none; opacity: 0; animation: annFadeIn 0.3s ease both;
+}
+.ann-bar-bot { width: 100%; height: 7px; border: 2px solid currentColor; border-top: none; border-radius: 0 0 3px 3px; margin-bottom: 3px; }
+.ann-lbl-below { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; line-height: 1; }
 </style>
 </head>
 <body>
 
 <nav class="topbar">
-  <div class="topbar-left">
-    <a class="topbar-back" href="../../index.html">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      Home
-    </a>
-    <span class="topbar-sep">·</span>
-    <span class="topbar-title">Introduction</span>
-  </div>
-  <button class="topbar-menu-btn" id="topbar-menu-btn" aria-label="Open menu">
+  <a class="topbar-back" href="../../index.html">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    Home
+  </a>
+  <span class="topbar-sep">·</span>
+  <span class="topbar-title">Introduction</span>
+  <button class="topbar-menu-btn" id="topbar-menu-btn" aria-label="Open menu" style="margin-left:auto">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
 </nav>
@@ -267,6 +297,35 @@ body {
       <li><span class="li-dot"></span><span><strong style="color:var(--text-bright)">Switch to backup sources</strong> — If the primary source fails, you switch to a pre-configured backup to keep the stream alive.</span></li>
       <li><span class="li-dot"></span><span><strong style="color:var(--text-bright)">Log and escalate</strong> — Document what happened, when, and why. Flag anything unusual for the engineering team.</span></li>
     </ul>
+  </div>
+
+  <!-- Anatomy of a stream title -->
+  <div class="section-card">
+    <div class="section-icon">🏷️</div>
+    <h2>Anatomy of a Stream Title</h2>
+    <p>Every live stream job has a structured title. Knowing how to read it helps you identify what's being broadcast, reference the correct asset, and report issues accurately.</p>
+
+    <div class="anatomy-tabs" id="anatomy-tabs">
+      <button class="anatomy-tab active" data-type="football">⚽ Team v Team</button>
+      <button class="anatomy-tab" data-type="motorsport">🏎️ Motorsport</button>
+      <button class="anatomy-tab" data-type="pfl">🥊 PFL / MMA</button>
+      <button class="anatomy-tab" data-type="generic">📋 Generic</button>
+    </div>
+
+    <div class="anatomy-scroll">
+      <div class="anatomy-stage" id="anatomy-stage">
+        <div class="anatomy-title-row" id="anatomy-title-row"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:4px;">
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);">
+        <div style="width:8px;height:8px;border-radius:50%;background:#f4845f;flex-shrink:0;"></div> Component labels
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);">
+        <div style="width:8px;height:8px;border-radius:50%;background:#818cf8;flex-shrink:0;"></div> Span labels
+      </div>
+    </div>
   </div>
 
   <!-- Tools you'll use -->
@@ -346,6 +405,163 @@ body {
     overlay.addEventListener('click', () => overlay.classList.remove('open'));
     document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.classList.remove('open'); });
   })();
+
+// ── Anatomy of a Stream Title ──────────────────────────────────────────────
+const ANATOMY_TYPES = {
+  football: {
+    parts: [
+      { text: 'Sporting Braga v Ferencváros', ann: 'team 1 v team 2', color: '#f4845f' },
+      { text: ' - ' },
+      { text: 'UEFA Europa League', ann: 'competition', color: '#f4845f' },
+      { text: ' ' },
+      { text: '2025/2026', ann: 'season', color: '#f4845f' },
+      { text: ' [' },
+      { text: '6298214', ann: 'asset id', color: '#f4845f' },
+      { text: 'B', ann: 'version', color: '#f4845f' },
+      { text: ']' },
+    ],
+    below: [
+      { from: 0, label: 'stream title', color: '#818cf8', offset: 0 },
+      { from: 5, label: 'asset',        color: '#818cf8', offset: 1 },
+    ]
+  },
+  motorsport: {
+    parts: [
+      { text: 'Formula 1', ann: 'competition', color: '#f5bf4b' },
+      { text: ' - ' },
+      { text: 'Monaco Grand Prix', ann: 'event', color: '#f5bf4b' },
+      { text: ' ' },
+      { text: '2025', ann: 'season', color: '#f5bf4b' },
+      { text: ' [' },
+      { text: '9182736', ann: 'asset id', color: '#f5bf4b' },
+      { text: 'A', ann: 'version', color: '#f5bf4b' },
+      { text: ']' },
+    ],
+    below: [
+      { from: 0, label: 'stream title', color: '#818cf8', offset: 0 },
+      { from: 5, label: 'asset',        color: '#818cf8', offset: 1 },
+    ]
+  },
+  pfl: {
+    parts: [
+      { text: 'PFL', ann: 'promotion', color: '#c084fc' },
+      { text: ' - ' },
+      { text: 'Henderson v Schulte', ann: 'fighter 1 v fighter 2', color: '#c084fc' },
+      { text: ' ' },
+      { text: '2025', ann: 'season', color: '#c084fc' },
+      { text: ' [' },
+      { text: '4455667', ann: 'asset id', color: '#c084fc' },
+      { text: 'C', ann: 'version', color: '#c084fc' },
+      { text: ']' },
+    ],
+    below: [
+      { from: 0, label: 'stream title', color: '#818cf8', offset: 0 },
+      { from: 5, label: 'asset',        color: '#818cf8', offset: 1 },
+    ]
+  },
+  generic: {
+    parts: [
+      { text: '[Team / Event]', ann: 'subject', color: '#3ec99a' },
+      { text: ' - ' },
+      { text: '[Competition]', ann: 'competition', color: '#3ec99a' },
+      { text: ' ' },
+      { text: '[Year]', ann: 'season', color: '#3ec99a' },
+      { text: ' [' },
+      { text: 'NNNNNNN', ann: 'asset id', color: '#3ec99a' },
+      { text: 'V', ann: 'version', color: '#3ec99a' },
+      { text: ']' },
+    ],
+    below: [
+      { from: 0, label: 'stream title', color: '#818cf8', offset: 0 },
+      { from: 5, label: 'asset',        color: '#818cf8', offset: 1 },
+    ]
+  },
+};
+
+function renderAnatomy(typeName) {
+  const stage = document.getElementById('anatomy-stage');
+  const row   = document.getElementById('anatomy-title-row');
+  if (!stage || !row) return;
+  const data = ANATOMY_TYPES[typeName];
+  if (!data) return;
+
+  // Remove previous below-items and clear row
+  stage.querySelectorAll('.ann-below-item').forEach(e => e.remove());
+  row.innerHTML = '';
+
+  const spanEls = [];
+  let delay = 0;
+
+  data.parts.forEach(p => {
+    const el = document.createElement('span');
+    if (p.ann) {
+      el.className = 'hp';
+      el.style.color = p.color;
+
+      const ann = document.createElement('div');
+      ann.className = 'ann-above';
+      ann.style.cssText = `animation-delay:${delay}s; color:${p.color};`;
+      ann.innerHTML = `<div class="ann-lbl">${p.ann}</div><div class="ann-bar-top"></div>`;
+      el.appendChild(ann);
+      el.appendChild(document.createTextNode(p.text));
+      delay += 0.12;
+    } else {
+      el.style.color = 'var(--text-bright)';
+      el.textContent = p.text;
+    }
+    row.appendChild(el);
+    spanEls.push(el);
+  });
+
+  // Position below annotations after browser layout
+  requestAnimationFrame(() => {
+    const stageRect = stage.getBoundingClientRect();
+    const rowRect   = row.getBoundingClientRect();
+    const rowBottom = rowRect.bottom - stageRect.top;
+
+    data.below.forEach((b, j) => {
+      const fromEl  = spanEls[b.from];
+      const lastEl  = spanEls[spanEls.length - 1];
+      const fromRect = fromEl.getBoundingClientRect();
+      const toRect   = lastEl.getBoundingClientRect();
+
+      const x = fromRect.left - stageRect.left;
+      const w = toRect.right - fromRect.left;
+      const top = rowBottom + 10 + b.offset * 34;
+
+      const item = document.createElement('div');
+      item.className = 'ann-below-item';
+      item.style.cssText = `left:${x}px;top:${top}px;width:${w}px;color:${b.color};animation-delay:${delay}s;`;
+      item.innerHTML = `<div class="ann-bar-bot"></div><div class="ann-lbl-below">${b.label}</div>`;
+      stage.appendChild(item);
+      delay += 0.1;
+    });
+  });
+}
+
+// Tab switching
+const anatomyTabsEl = document.getElementById('anatomy-tabs');
+if (anatomyTabsEl) {
+  anatomyTabsEl.addEventListener('click', e => {
+    const tab = e.target.closest('.anatomy-tab');
+    if (!tab) return;
+    anatomyTabsEl.querySelectorAll('.anatomy-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderAnatomy(tab.dataset.type);
+  });
+}
+
+// Resize handler
+let anatomyResizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(anatomyResizeTimer);
+  anatomyResizeTimer = setTimeout(() => {
+    const activeTab = anatomyTabsEl?.querySelector('.anatomy-tab.active');
+    if (activeTab) renderAnatomy(activeTab.dataset.type);
+  }, 150);
+});
+
+renderAnatomy('football');
 </script>
 </body>
 </html>
