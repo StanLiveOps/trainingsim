@@ -1,9 +1,4 @@
 {
-  "channel": {
-    "name": "live",
-    "topic": ":ready: :ready: :ready:"
-  },
-
   "bot": {
     "name": "Jared",
     "avatar": "jared.png",
@@ -19,23 +14,5 @@
     "mentionColor": "#dea700",
     "avatar": "pfp.png",
     "avatarColor": "#dea700"
-  },
-
-  "source": {
-    "name": "ampp25",
-    "backupEnabled": true,
-    "backupName": "tbs25"
-  },
-
-  "training": {
-    "barTitle": "Training Scenario",
-    "defaultScenario": "down",
-    "scenarios": [
-      { "id": "down",     "label": "Scenario 1" },
-      { "id": "onesided", "label": "Scenario 2" },
-      { "id": "zigzag",   "label": "Scenario 3" },
-      { "id": "drops",    "label": "Scenario 4" },
-      { "id": "normal",   "label": "Scenario 5" }
-    ]
   }
 }

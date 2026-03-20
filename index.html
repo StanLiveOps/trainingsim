@@ -22,10 +22,10 @@
   --purple-bar: #7c5cbf;
 }
 body.light {
-  --bg: #f4f5f7;
+  --bg: #f0f2f5;
   --surface: #ffffff;
-  --surface2: #ebecf0;
-  --border: #dfe1e6;
+  --surface2: #e8eaed;
+  --border: #d0d3db;
   --text: #172b4d;
   --text-muted: #6b778c;
   --text-bright: #091e42;
@@ -53,14 +53,12 @@ body {
 }
 #sidebar-toggle:hover { background: var(--border); }
 
-/* ── Sidebar overlay ── */
 #sidebar-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.45);
   z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.25s;
 }
 #sidebar-overlay.active { opacity: 1; pointer-events: auto; }
 
-/* ── Sidebar panel ── */
 #sidebar {
   position: fixed; top: 0; left: -270px;
   width: 250px; height: 100%;
@@ -106,6 +104,15 @@ body {
 }
 #reset-name-btn:hover { background: var(--border); color: var(--text); }
 
+.sidebar-nav-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 7px;
+  font-size: 14px; font-weight: 700; color: var(--text);
+  text-decoration: none; transition: background 0.12s;
+}
+.sidebar-nav-link:hover { background: var(--hover-bg); color: var(--text-bright); }
+.sidebar-nav-link svg { flex-shrink: 0; opacity: 0.7; }
+
 /* ── Header ── */
 header {
   width: 100%; max-width: 760px;
@@ -117,16 +124,38 @@ header img.logo { height: 34px; width: auto; }
 .header-text h1 { font-size: 22px; font-weight: 900; color: var(--text-bright); }
 .header-text p  { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
 
+/* ── Category sections ── */
+.categories { width: 100%; max-width: 760px; display: flex; flex-direction: column; gap: 36px; }
+
+.category-section {}
+.category-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 16px;
+}
+.category-label {
+  font-size: 11px; font-weight: 900; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-muted);
+  white-space: nowrap;
+}
+.category-header::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.category-empty {
+  font-size: 13px; color: var(--text-muted);
+  padding: 14px 16px;
+  background: var(--surface); border: 1px dashed var(--border);
+  border-radius: 10px;
+}
+
 /* ── Module grid ── */
-.modules {
-  width: 100%; max-width: 760px;
+.module-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-  gap: 16px;
+  gap: 14px;
 }
 .module-card {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: 12px; padding: 22px;
+  border-radius: 12px; padding: 20px;
   text-decoration: none; color: inherit;
   display: flex; flex-direction: column; gap: 10px;
   transition: border-color 0.15s, background 0.15s, transform 0.12s;
@@ -134,7 +163,7 @@ header img.logo { height: 34px; width: auto; }
 .module-card:hover { border-color: var(--purple-bar); background: var(--surface2); transform: translateY(-2px); }
 .module-card:active { transform: translateY(0); }
 
-/* ── Tags ── */
+/* ── Tag badge ── */
 .module-tag {
   display: inline-block; align-self: flex-start;
   font-size: 10px; font-weight: 900; letter-spacing: 0.08em;
@@ -161,30 +190,24 @@ header img.logo { height: 34px; width: auto; }
   animation: fadeOut 0.45s forwards;
   pointer-events: none;
 }
-@keyframes fadeOut {
-  to { opacity: 0; transform: scale(0.97); }
-}
+@keyframes fadeOut { to { opacity: 0; transform: scale(0.97); } }
 
 #welcome-box {
   display: flex; flex-direction: column; align-items: center;
   gap: 18px; max-width: 400px; width: 100%; padding: 0 24px;
   text-align: center;
 }
-#welcome-img {
-  width: 240px; height: auto;
+#welcome-img-wrap {
   animation: sway 2.2s ease-in-out infinite;
+  display: inline-block;
 }
 @keyframes sway {
   0%, 100% { transform: translateX(0) rotate(0deg); }
   25%       { transform: translateX(-12px) rotate(-3deg); }
   75%       { transform: translateX(12px) rotate(3deg); }
 }
-#welcome-heading {
-  font-size: 26px; font-weight: 900; color: var(--text-bright);
-}
-#welcome-sub {
-  font-size: 15px; color: var(--text-muted); margin-top: -8px;
-}
+#welcome-img { width: 240px; height: auto; display: block; will-change: transform; }
+
 #name-input {
   width: 100%; padding: 10px 14px;
   background: var(--surface); border: 1px solid var(--border);
@@ -202,7 +225,6 @@ header img.logo { height: 34px; width: auto; }
   transition: background 0.12s;
 }
 #name-submit:hover { background: #d9185e; }
-/* returning user — no form shown */
 #name-form { width: 100%; display: flex; flex-direction: column; gap: 12px; }
 
 /* ── Password step ── */
@@ -232,9 +254,7 @@ header img.logo { height: 34px; width: auto; }
   transition: background 0.12s;
 }
 #pw-submit:hover { background: #d9185e; }
-#pw-error {
-  font-size: 13px; color: #e01e5a; text-align: center; min-height: 18px;
-}
+#pw-error { font-size: 13px; color: #e01e5a; text-align: center; min-height: 18px; }
 
 /* ── Loading / error ── */
 #loading { color: var(--text-muted); font-size: 14px; padding: 40px 0; display: flex; align-items: center; gap: 10px; }
@@ -253,7 +273,18 @@ header img.logo { height: 34px; width: auto; }
     <span>Menu</span>
     <button id="sidebar-close">&times;</button>
   </div>
-  <div class="sidebar-section" style="border-top:none; margin-top:0;">
+  <div class="sidebar-section" style="border-top:none; margin-top:0; padding-bottom:8px;">
+    <div class="sidebar-label">Navigate</div>
+    <a class="sidebar-nav-link" href="index.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </a>
+    <a class="sidebar-nav-link" href="settings.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </a>
+  </div>
+  <div class="sidebar-section">
     <div class="sidebar-label">Theme</div>
     <div class="theme-row">
       <button class="theme-btn" data-theme="dark">Dark</button>
@@ -267,14 +298,16 @@ header img.logo { height: 34px; width: auto; }
   </div>
 </div>
 
-<!-- Welcome overlay — always shown on load -->
+<!-- Welcome overlay -->
 <div id="welcome-overlay">
   <div id="welcome-box">
-    <img id="welcome-img" src="images/welcome.png" alt="Welcome">
+    <div id="welcome-img-wrap">
+      <img id="welcome-img" src="images/welcome.png" alt="Welcome">
+    </div>
 
     <!-- Step 1: password -->
     <div id="password-panel">
-      <div id="welcome-heading" style="font-size:26px;font-weight:900;color:var(--text-bright);">Enter password</div>
+      <div style="font-size:26px;font-weight:900;color:var(--text-bright);">Enter password</div>
       <input type="password" id="pw-input" placeholder="Password..." autocomplete="off">
       <div id="pw-error"></div>
       <button id="pw-submit">Continue</button>
@@ -289,7 +322,6 @@ header img.logo { height: 34px; width: auto; }
         <button id="name-submit">Get started</button>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -304,14 +336,50 @@ header img.logo { height: 34px; width: auto; }
   </div>
 </header>
 
-<div class="modules" id="modules" style="display:none;"></div>
+<div class="categories" id="categories" style="display:none;"></div>
 
 <script>
 const THEME_KEY = 'trainingsim_theme';
 const USER_KEY  = 'trainingsim_username';
+const AUTH_KEY  = 'trainingsim_auth';
+
+// ── Welcome image: slowly flees cursor ─────────────────────────────────────
+(function initFlee() {
+  const overlay = document.getElementById('welcome-overlay');
+  const imgEl   = document.getElementById('welcome-img');
+  let mouseX = -9999, mouseY = -9999;
+  let posX = 0, posY = 0;
+  const RADIUS = 220, SPEED = 1.0, MAX_DRIFT = 100, RETURN = 0.035;
+
+  document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+
+  function tick() {
+    if (!overlay || overlay.style.display === 'none') return;
+    const rect = imgEl.getBoundingClientRect();
+    const cx = rect.left + rect.width  / 2;
+    const cy = rect.top  + rect.height / 2;
+    const dx = mouseX - cx, dy = mouseY - cy;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (mouseX > -999 && dist < RADIUS) {
+      const s = (1 - dist / RADIUS);
+      const a = Math.atan2(dy, dx);
+      posX -= Math.cos(a) * SPEED * s;
+      posY -= Math.sin(a) * SPEED * s;
+      posX = Math.max(-MAX_DRIFT, Math.min(MAX_DRIFT, posX));
+      posY = Math.max(-MAX_DRIFT, Math.min(MAX_DRIFT, posY));
+    } else {
+      posX -= posX * RETURN; posY -= posY * RETURN;
+      if (Math.abs(posX) < 0.05) posX = 0;
+      if (Math.abs(posY) < 0.05) posY = 0;
+    }
+    imgEl.style.transform = `translate(${posX.toFixed(2)}px, ${posY.toFixed(2)}px)`;
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
 
 // ── Theme ──────────────────────────────────────────────────────────────────
-
 function applyTheme(theme) {
   document.body.classList.toggle('light', theme === 'light');
   document.querySelectorAll('.theme-btn').forEach(b =>
@@ -319,11 +387,9 @@ function applyTheme(theme) {
   );
   localStorage.setItem(THEME_KEY, theme);
 }
-
 applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
 
 // ── Sidebar ────────────────────────────────────────────────────────────────
-
 (function initSidebar() {
   const toggle   = document.getElementById('sidebar-toggle');
   const sidebar  = document.getElementById('sidebar');
@@ -338,7 +404,6 @@ applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
   toggle.addEventListener('click', open);
   closeBtn.addEventListener('click', close);
   overlay.addEventListener('click', close);
-
   document.querySelectorAll('.theme-btn').forEach(btn =>
     btn.addEventListener('click', () => applyTheme(btn.dataset.theme))
   );
@@ -350,20 +415,17 @@ applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
 
   resetBtn.addEventListener('click', () => {
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(AUTH_KEY);
     location.reload();
   });
 })();
 
-// ── Bootstrap: load config then drive the whole auth + module flow ─────────
-
+// ── Tag labels ─────────────────────────────────────────────────────────────
 const TAG_LABELS = {
-  live:     'Live',
-  vods:     'VODs',
-  cms:      'CMS',
-  airtable: 'Airtable',
-  ampp:     'AMPP',
+  live: 'Live', vods: 'VODs', cms: 'CMS', airtable: 'Airtable', ampp: 'AMPP',
 };
 
+// ── Bootstrap ──────────────────────────────────────────────────────────────
 async function bootstrap() {
   let cfg = {};
   try {
@@ -372,49 +434,50 @@ async function bootstrap() {
     cfg = await res.json();
   } catch (e) {
     document.getElementById('loading').style.display = 'none';
-    document.getElementById('error').style.display = 'block';
-    document.getElementById('error').textContent = 'Could not load modules.json — ' + e.message;
+    const el = document.getElementById('error');
+    el.style.display = 'block';
+    el.textContent = 'Could not load modules.json — ' + e.message;
     return;
   }
 
   // ── Step 1: password ────────────────────────────────────────────────────
-  const pwPanel  = document.getElementById('password-panel');
-  const pwInput  = document.getElementById('pw-input');
-  const pwSubmit = document.getElementById('pw-submit');
-  const pwError  = document.getElementById('pw-error');
-  const correctPw = cfg.password || '';
+  if (!localStorage.getItem(AUTH_KEY)) {
+    const pwInput  = document.getElementById('pw-input');
+    const pwSubmit = document.getElementById('pw-submit');
+    const pwError  = document.getElementById('pw-error');
+    const correctPw = cfg.password || '';
+    setTimeout(() => pwInput.focus(), 80);
 
-  setTimeout(() => pwInput.focus(), 80);
-
-  await new Promise(resolve => {
-    function checkPassword() {
-      if (pwInput.value === correctPw) {
-        pwError.textContent = '';
-        resolve();
-      } else {
-        pwError.textContent = 'Incorrect password.';
-        pwInput.classList.remove('error');
-        void pwInput.offsetWidth; // reflow to restart animation
-        pwInput.classList.add('error');
-        pwInput.value = '';
-        setTimeout(() => pwInput.focus(), 50);
+    await new Promise(resolve => {
+      function check() {
+        if (pwInput.value === correctPw) {
+          localStorage.setItem(AUTH_KEY, 'true');
+          pwError.textContent = '';
+          resolve();
+        } else {
+          pwError.textContent = 'Incorrect password.';
+          pwInput.classList.remove('error'); void pwInput.offsetWidth;
+          pwInput.classList.add('error');
+          pwInput.value = '';
+          setTimeout(() => pwInput.focus(), 50);
+        }
       }
-    }
-    pwSubmit.addEventListener('click', checkPassword);
-    pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') checkPassword(); });
-  });
+      pwSubmit.addEventListener('click', check);
+      pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') check(); });
+    });
+  }
 
   // ── Step 2: name / welcome back ─────────────────────────────────────────
-  const overlay   = document.getElementById('welcome-overlay');
-  const namePanel = document.getElementById('name-panel');
+  const overlay     = document.getElementById('welcome-overlay');
+  const namePanel   = document.getElementById('name-panel');
   const nameHeading = document.getElementById('name-heading');
-  const nameSub   = document.getElementById('name-sub');
-  const nameForm  = document.getElementById('name-form');
-  const nameInput = document.getElementById('name-input');
-  const nameSubmit = document.getElementById('name-submit');
-  const savedName = localStorage.getItem(USER_KEY);
+  const nameSub     = document.getElementById('name-sub');
+  const nameForm    = document.getElementById('name-form');
+  const nameInput   = document.getElementById('name-input');
+  const nameSubmit  = document.getElementById('name-submit');
+  const savedName   = localStorage.getItem(USER_KEY);
 
-  pwPanel.style.display = 'none';
+  document.getElementById('password-panel').style.display = 'none';
   namePanel.style.display = 'flex';
 
   function dismiss() {
@@ -424,13 +487,13 @@ async function bootstrap() {
 
   if (savedName) {
     nameHeading.textContent = `Welcome back, ${savedName}`;
-    nameSub.textContent     = '';
-    nameForm.style.display  = 'none';
+    nameSub.textContent = '';
+    nameForm.style.display = 'none';
     setTimeout(dismiss, 900);
   } else {
     nameHeading.textContent = 'Welcome';
-    nameSub.textContent     = "What's your name?";
-    nameForm.style.display  = 'flex';
+    nameSub.textContent = "What's your name?";
+    nameForm.style.display = 'flex';
     setTimeout(() => nameInput.focus(), 50);
 
     function save() {
@@ -445,31 +508,55 @@ async function bootstrap() {
     nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') save(); });
   }
 
-  // ── Render modules ───────────────────────────────────────────────────────
+  // ── Render categories + modules ──────────────────────────────────────────
   document.getElementById('loading').style.display = 'none';
   document.title = cfg.title || 'Training Hub';
   document.getElementById('hub-title').textContent    = cfg.title    || 'Training Hub';
   document.getElementById('hub-subtitle').textContent = cfg.subtitle || '';
   document.getElementById('header').style.display = 'flex';
 
-  const grid = document.getElementById('modules');
-  (cfg.modules || []).forEach(mod => {
-    const tagKey   = (mod.tag || '').toLowerCase();
-    const tagLabel = TAG_LABELS[tagKey] || mod.tag || '';
-    const tagClass = tagKey ? `tag-${tagKey}` : '';
+  const container = document.getElementById('categories');
 
-    const card = document.createElement('a');
-    card.className = 'module-card';
-    card.href = mod.url;
-    card.innerHTML = `
-      ${tagLabel ? `<span class="module-tag ${tagClass}">${tagLabel}</span>` : ''}
-      <div class="module-name">${mod.name}</div>
-      <div class="module-desc">${mod.description}</div>
-      <div class="module-arrow">Open module &rarr;</div>
-    `;
-    grid.appendChild(card);
+  (cfg.categories || []).forEach(cat => {
+    const section = document.createElement('div');
+    section.className = 'category-section';
+
+    const header = document.createElement('div');
+    header.className = 'category-header';
+    header.innerHTML = `<span class="category-label">${cat.label}</span>`;
+    section.appendChild(header);
+
+    const mods = cat.modules || [];
+    if (mods.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'category-empty';
+      empty.textContent = 'Coming soon';
+      section.appendChild(empty);
+    } else {
+      const grid = document.createElement('div');
+      grid.className = 'module-grid';
+      mods.forEach(mod => {
+        const tagKey   = (mod.tag || '').toLowerCase();
+        const tagLabel = TAG_LABELS[tagKey] || mod.tag || '';
+        const tagClass = tagKey ? `tag-${tagKey}` : '';
+        const card = document.createElement('a');
+        card.className = 'module-card';
+        card.href = mod.url;
+        card.innerHTML = `
+          ${tagLabel ? `<span class="module-tag ${tagClass}">${tagLabel}</span>` : ''}
+          <div class="module-name">${mod.name}</div>
+          <div class="module-desc">${mod.description}</div>
+          <div class="module-arrow">Open module &rarr;</div>
+        `;
+        grid.appendChild(card);
+      });
+      section.appendChild(grid);
+    }
+
+    container.appendChild(section);
   });
-  grid.style.display = 'grid';
+
+  container.style.display = 'flex';
 }
 
 bootstrap();

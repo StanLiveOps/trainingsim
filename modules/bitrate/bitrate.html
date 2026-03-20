@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Stream Control — Training Sim</title>
-<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="icon" type="image/png" href="../../images/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
@@ -361,7 +361,8 @@ body.light .app-card { background: rgba(124,92,191,0.06); }
     <button id="sidebar-close">&times;</button>
   </div>
   <nav class="sidebar-nav">
-    <a href="index.html" class="sidebar-link">&#8592; Home</a>
+    <a href="../../index.html" class="sidebar-link">&#8592; Home</a>
+    <a href="../../settings.html" class="sidebar-link">&#9881; Settings</a>
   </nav>
   <div class="sidebar-section">
     <div class="sidebar-label">Theme</div>
@@ -375,6 +376,31 @@ body.light .app-card { background: rgba(124,92,191,0.06); }
     <div class="sidebar-user" id="sidebar-username"></div>
     <button id="reset-name-btn">Reset name</button>
   </div>
+</div>
+
+<!-- ── Normal-bitrate preview overlay ── -->
+<div id="preview-overlay">
+
+  <!-- Step A: 3-second "are you ready" countdown -->
+  <div id="preview-countdown">
+    <div id="preview-countdown-label">Are you ready?</div>
+    <div id="preview-countdown-num">3</div>
+  </div>
+
+  <!-- Step B: full-screen chart with 15-second timer -->
+  <div id="preview-chart-screen" style="display:none;">
+    <div id="preview-instruction">
+      You have <span id="preview-seconds">15</span> seconds to look at a <strong>NORMAL</strong> bitrate.
+      Notice everything about it. Look hard.
+    </div>
+    <div id="preview-chart-area">
+      <canvas id="preview-canvas"></canvas>
+    </div>
+    <div id="preview-timer-bar-wrap">
+      <div id="preview-timer-bar"></div>
+    </div>
+  </div>
+
 </div>
 
 <div id="loading"><div class="spinner"></div> Loading...</div>
@@ -721,14 +747,29 @@ let allBtns = [];
 
 async function init() {
   try {
-    const res = await fetch('config.json?_=' + Date.now());
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    CFG = await res.json();
+    // Load global config and module-specific config in parallel, then merge
+    const [globalRes, moduleRes] = await Promise.all([
+      fetch('../../config.json?_='         + Date.now()),
+      fetch('config.json?_=' + Date.now()),
+    ]);
+    if (!globalRes.ok) throw new Error(`config.json HTTP ${globalRes.status}`);
+    if (!moduleRes.ok) throw new Error(`modules/bitrate/config.json HTTP ${moduleRes.status}`);
+
+    const globalCfg = await globalRes.json();
+    const moduleCfg = await moduleRes.json();
+
+    // Merge: module config drives channel/source/training; global drives user/bot/card
+    CFG = {
+      ...moduleCfg,
+      bot:  globalCfg.bot,
+      card: globalCfg.card,
+      user: globalCfg.user,
+    };
   } catch (e) {
     document.getElementById('loading').style.display = 'none';
     const err = document.getElementById('error');
     err.style.display = 'block';
-    err.textContent = 'Could not load config.json — ' + e.message;
+    err.textContent = 'Could not load config — ' + e.message;
     return;
   }
 
@@ -747,7 +788,7 @@ async function init() {
   topicEl.innerHTML = '';
   for (let i = 0; i < 3; i++) {
     const img = document.createElement('img');
-    img.src = 'images/ready.png';
+    img.src = '../../images/ready.png';
     img.className = 'topic-emoji';
     img.alt = 'ready';
     topicEl.appendChild(img);
@@ -815,7 +856,7 @@ function buildSim() {
   card.appendChild(btnRow);
 
   // Bot row — card goes inside message body as a child
-  const botAvatar = makeAvatar(CFG.bot.name, 'images/' + (CFG.bot.avatar || 'jared.png'), '#4a154b');
+  const botAvatar = makeAvatar(CFG.bot.name, '../../images/' + (CFG.bot.avatar || 'jared.png'), '#4a154b');
   const botRow = renderMessage({
     avatar:   botAvatar,
     name:     CFG.bot.name,
@@ -865,7 +906,7 @@ function handleAction(btnCfg, jobId) {
   const userName   = CFG.user.name;
   const sourceName = CFG.source?.name       || 'ampp10';
   const backupName = CFG.source?.backupName || 'tbs10';
-  const userAvatar = makeAvatar(CFG.user.name, 'images/' + (CFG.user.avatar || 'pfp.png'), CFG.user.avatarColor || '#555');
+  const userAvatar = makeAvatar(CFG.user.name, '../../images/' + (CFG.user.avatar || 'pfp.png'), CFG.user.avatarColor || '#555');
 
   let commandText = '';
   let extraEl     = null;
@@ -969,7 +1010,7 @@ function initSidebar() {
 
   resetBtn.addEventListener('click', () => {
     localStorage.removeItem(USER_KEY);
-    location.href = 'index.html';
+    location.href = '../../index.html';
   });
 
   applyTheme(localStorage.getItem(THEME_KEY) || 'dark');

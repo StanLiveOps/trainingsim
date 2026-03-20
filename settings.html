@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings — Training Hub</title>
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #1a1d21;
+  --surface: #222529;
+  --surface2: #2a2d31;
+  --border: #383b42;
+  --text: #d1d2d3;
+  --text-muted: #8b9196;
+  --text-bright: #f2f3f5;
+  --hover-bg: rgba(255,255,255,0.04);
+  --accent: #c0175d;
+  --accent-hover: #d9185e;
+  --purple-bar: #7c5cbf;
+  --green: #2bac76;
+  --red: #e01e5a;
+}
+body.light {
+  --bg: #f0f2f5;
+  --surface: #ffffff;
+  --surface2: #e8eaed;
+  --border: #d0d3db;
+  --text: #172b4d;
+  --text-muted: #6b778c;
+  --text-bright: #091e42;
+  --hover-bg: rgba(0,0,0,0.04);
+}
+
+body {
+  font-family: 'Lato', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 60px 24px 80px;
+  transition: background 0.2s, color 0.2s;
+}
+
+/* ── Sidebar toggle ── */
+#sidebar-toggle {
+  position: fixed; top: 14px; left: 14px; z-index: 200;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; width: 36px; height: 36px;
+  font-size: 18px; cursor: pointer; color: var(--text);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.12s; line-height: 1;
+}
+#sidebar-toggle:hover { background: var(--border); }
+
+#sidebar-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+#sidebar-overlay.active { opacity: 1; pointer-events: auto; }
+
+#sidebar {
+  position: fixed; top: 0; left: -270px;
+  width: 250px; height: 100%;
+  background: var(--surface); border-right: 1px solid var(--border);
+  z-index: 400; display: flex; flex-direction: column;
+  transition: left 0.25s cubic-bezier(0.4,0,0.2,1); overflow-y: auto;
+}
+#sidebar.open { left: 0; }
+
+.sidebar-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 16px 12px; border-bottom: 1px solid var(--border);
+}
+.sidebar-header span { font-weight: 900; font-size: 15px; color: var(--text-bright); }
+#sidebar-close {
+  background: none; border: none; font-size: 22px; line-height: 1;
+  cursor: pointer; color: var(--text-muted); padding: 2px 6px; border-radius: 4px;
+}
+#sidebar-close:hover { background: var(--border); color: var(--text); }
+
+.sidebar-section { padding: 14px 16px; border-top: 1px solid var(--border); margin-top: 6px; }
+.sidebar-label {
+  font-size: 10px; font-weight: 900; text-transform: uppercase;
+  letter-spacing: 0.09em; color: var(--text-muted); margin-bottom: 10px;
+}
+.theme-row { display: flex; gap: 8px; }
+.theme-btn {
+  flex: 1; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 7px;
+  font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700;
+  color: var(--text); cursor: pointer; transition: background 0.12s, border-color 0.12s;
+}
+.theme-btn:hover { background: var(--border); }
+.theme-btn.active { background: var(--purple-bar); border-color: var(--purple-bar); color: #fff; }
+
+.sidebar-nav-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 7px;
+  font-size: 14px; font-weight: 700; color: var(--text);
+  text-decoration: none; transition: background 0.12s;
+}
+.sidebar-nav-link:hover { background: var(--hover-bg); color: var(--text-bright); }
+
+/* ── Page header ── */
+.page-header {
+  width: 100%; max-width: 760px;
+  margin-bottom: 36px; padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 14px;
+}
+.page-header img { height: 32px; }
+.page-header-text h1 { font-size: 22px; font-weight: 900; color: var(--text-bright); }
+.page-header-text p  { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+
+/* ── Settings layout ── */
+.settings-wrap { width: 100%; max-width: 760px; display: flex; flex-direction: column; gap: 28px; }
+
+/* ── Section card ── */
+.settings-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.settings-card-header {
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.settings-card-title {
+  font-size: 14px; font-weight: 900; color: var(--text-bright);
+  display: flex; align-items: center; gap: 8px;
+}
+.settings-card-badge {
+  font-size: 9px; font-weight: 900; letter-spacing: 0.07em;
+  text-transform: uppercase; padding: 2px 7px; border-radius: 3px;
+  background: rgba(124,92,191,0.2); color: #a98de8; border: 1px solid rgba(124,92,191,0.35);
+}
+.settings-card-body { padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+
+/* ── Field row ── */
+.field-row { display: flex; flex-direction: column; gap: 6px; }
+.field-label {
+  font-size: 11px; font-weight: 900; text-transform: uppercase;
+  letter-spacing: 0.07em; color: var(--text-muted);
+}
+.field-hint { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.field-input {
+  width: 100%; padding: 9px 12px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 7px; font-family: 'Lato', sans-serif;
+  font-size: 14px; color: var(--text-bright);
+  outline: none; transition: border-color 0.15s;
+}
+.field-input:focus { border-color: var(--purple-bar); }
+.field-input.error { border-color: var(--red); }
+.field-input::placeholder { color: var(--text-muted); }
+
+.field-checkbox-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.field-checkbox {
+  width: 18px; height: 18px; cursor: pointer; accent-color: var(--purple-bar);
+}
+.field-checkbox-label { font-size: 14px; color: var(--text); cursor: pointer; }
+
+/* ── Color swatch input ── */
+.color-row { display: flex; gap: 10px; align-items: center; }
+.color-preview {
+  width: 36px; height: 36px; border-radius: 7px;
+  border: 1px solid var(--border); flex-shrink: 0; cursor: pointer;
+}
+.color-row .field-input { flex: 1; }
+
+/* ── Scenarios list ── */
+.scenarios-list { display: flex; flex-direction: column; gap: 10px; }
+.scenario-row {
+  display: flex; gap: 10px; align-items: center;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px;
+}
+.scenario-row .sc-id-badge {
+  font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-muted); background: var(--bg);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 3px 8px; white-space: nowrap; flex-shrink: 0;
+}
+.scenario-row .field-input { flex: 1; margin: 0; }
+.scenario-row .drag-handle {
+  cursor: grab; color: var(--text-muted); font-size: 16px;
+  padding: 0 4px; user-select: none;
+}
+.scenario-row .drag-handle:active { cursor: grabbing; }
+.scenario-row.dragging { opacity: 0.45; }
+.scenario-row.drag-over { border-color: var(--purple-bar); }
+
+/* ── Action bar ── */
+.action-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 20px; border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+.btn-save {
+  background: var(--accent); color: #fff; border: none;
+  border-radius: 7px; padding: 9px 20px;
+  font-family: 'Lato', sans-serif; font-size: 14px; font-weight: 900;
+  cursor: pointer; transition: background 0.12s;
+}
+.btn-save:hover { background: var(--accent-hover, #d9185e); }
+.btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-secondary {
+  background: transparent; color: var(--text-muted);
+  border: 1px solid var(--border); border-radius: 7px;
+  padding: 9px 16px; font-family: 'Lato', sans-serif;
+  font-size: 14px; cursor: pointer; transition: background 0.12s;
+}
+.btn-secondary:hover { background: var(--border); color: var(--text); }
+
+.save-msg {
+  font-size: 13px; margin-left: 4px;
+  opacity: 0; transition: opacity 0.3s;
+}
+.save-msg.show { opacity: 1; }
+.save-msg.ok  { color: var(--green); }
+.save-msg.err { color: var(--red); }
+
+/* ── File Access API notice ── */
+.fs-notice {
+  font-size: 13px; color: var(--text-muted);
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 16px; line-height: 1.6;
+}
+.fs-notice b { color: var(--text); }
+
+/* ── Divider ── */
+.settings-divider { height: 1px; background: var(--border); }
+
+/* ── Loading ── */
+#loading { color: var(--text-muted); font-size: 14px; padding: 60px 0; display: flex; align-items: center; gap: 10px; }
+.spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--text-muted); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+#error-msg { color: var(--red); font-size: 14px; padding: 20px 0; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<button id="sidebar-toggle">&#9776;</button>
+<div id="sidebar-overlay"></div>
+<div id="sidebar">
+  <div class="sidebar-header">
+    <span>Menu</span>
+    <button id="sidebar-close">&times;</button>
+  </div>
+  <div class="sidebar-section" style="border-top:none; margin-top:0; padding-bottom:8px;">
+    <div class="sidebar-label">Navigate</div>
+    <a class="sidebar-nav-link" href="index.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </a>
+    <a class="sidebar-nav-link" href="settings.html" style="color:var(--text-bright);">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Theme</div>
+    <div class="theme-row">
+      <button class="theme-btn" data-theme="dark">Dark</button>
+      <button class="theme-btn" data-theme="light">Light</button>
+    </div>
+  </div>
+</div>
+
+<div id="loading"><div class="spinner"></div> Loading configs...</div>
+<div id="error-msg" style="display:none;"></div>
+
+<div id="settings-root" style="display:none; width:100%; display:none; flex-direction:column; align-items:center;">
+
+  <div class="page-header">
+    <img src="images/favicon.png" alt="logo">
+    <div class="page-header-text">
+      <h1>Settings</h1>
+      <p>Trainer configuration — changes save back to JSON files</p>
+    </div>
+  </div>
+
+  <div class="settings-wrap">
+
+    <!-- ── How saving works ─────────────────────────────────── -->
+    <div class="fs-notice" id="fs-notice">
+      <b>How saving works:</b> This page uses the browser's File System Access API.
+      The first time you click Save on a section, your browser will ask you to locate and
+      confirm the relevant JSON file. Once granted, saves happen automatically until you
+      close the tab. Files must live in the <code>trainingsim/</code> folder you're running from.
+    </div>
+
+    <!-- ── GLOBAL CONFIG ────────────────────────────────────── -->
+    <div class="settings-card" id="card-global">
+      <div class="settings-card-header">
+        <div class="settings-card-title">
+          Global Settings
+          <span class="settings-card-badge">config.json</span>
+        </div>
+      </div>
+      <div class="settings-card-body" id="global-body">
+
+        <div class="field-row">
+          <label class="field-label" for="g-event-title">Event / Match Title</label>
+          <div class="field-hint">Include the Job ID in brackets at the end, e.g. <code>Match Name [ABC123]</code></div>
+          <input class="field-input" id="g-event-title" type="text" placeholder="Match Name [JOB_ID]">
+        </div>
+
+        <div class="settings-divider"></div>
+
+        <div class="field-row">
+          <label class="field-label">Bot Name</label>
+          <input class="field-input" id="g-bot-name" type="text" placeholder="e.g. Jared">
+        </div>
+
+        <div class="settings-divider"></div>
+
+        <div class="field-row">
+          <label class="field-label">Your Display Name</label>
+          <div class="field-hint">Overridden per-session by the welcome screen — editing here updates the default.</div>
+          <input class="field-input" id="g-user-name" type="text" placeholder="e.g. Alex">
+        </div>
+
+        <div class="field-row">
+          <label class="field-label">Mention Colour</label>
+          <div class="color-row">
+            <input type="color" id="g-user-color-picker" class="color-preview" title="Pick colour">
+            <input class="field-input" id="g-user-color" type="text" placeholder="#dea700" maxlength="9">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <label class="field-label">Avatar Colour</label>
+          <div class="color-row">
+            <input type="color" id="g-avatar-color-picker" class="color-preview" title="Pick colour">
+            <input class="field-input" id="g-avatar-color" type="text" placeholder="#dea700" maxlength="9">
+          </div>
+        </div>
+
+      </div>
+      <div class="action-bar">
+        <button class="btn-save" id="save-global">Save config.json</button>
+        <button class="btn-secondary" id="reload-global">Reload</button>
+        <span class="save-msg" id="msg-global"></span>
+      </div>
+    </div>
+
+    <!-- ── BITRATE MODULE CONFIG ─────────────────────────────── -->
+    <div class="settings-card" id="card-bitrate">
+      <div class="settings-card-header">
+        <div class="settings-card-title">
+          Bitrates Module
+          <span class="settings-card-badge">modules/bitrate/config.json</span>
+        </div>
+      </div>
+      <div class="settings-card-body" id="bitrate-body">
+
+        <div class="field-row">
+          <label class="field-label" for="b-channel">Channel Name</label>
+          <input class="field-input" id="b-channel" type="text" placeholder="e.g. live">
+        </div>
+
+        <div class="settings-divider"></div>
+
+        <div class="field-row">
+          <label class="field-label" for="b-source">Primary Source Name</label>
+          <input class="field-input" id="b-source" type="text" placeholder="e.g. ampp25">
+        </div>
+
+        <div class="field-checkbox-row" style="margin-top:6px;">
+          <input type="checkbox" class="field-checkbox" id="b-backup-enabled">
+          <label class="field-checkbox-label" for="b-backup-enabled">Backup source enabled</label>
+        </div>
+
+        <div class="field-row" id="b-backup-row">
+          <label class="field-label" for="b-backup-name">Backup Source Name</label>
+          <input class="field-input" id="b-backup-name" type="text" placeholder="e.g. tbs25">
+        </div>
+
+        <div class="settings-divider"></div>
+
+        <div class="field-row">
+          <label class="field-label" for="b-bar-title">Training Bar Title</label>
+          <input class="field-input" id="b-bar-title" type="text" placeholder="Training Scenario">
+        </div>
+
+        <div class="field-row">
+          <label class="field-label" for="b-default-scenario">Default Scenario ID</label>
+          <div class="field-hint">Must match one of the scenario IDs below.</div>
+          <input class="field-input" id="b-default-scenario" type="text" placeholder="down">
+        </div>
+
+        <div class="field-row">
+          <label class="field-label">Scenarios</label>
+          <div class="field-hint">Drag to reorder. Labels are shown on the buttons. IDs are fixed.</div>
+          <div class="scenarios-list" id="scenarios-list"></div>
+        </div>
+
+      </div>
+      <div class="action-bar">
+        <button class="btn-save" id="save-bitrate">Save modules/bitrate/config.json</button>
+        <button class="btn-secondary" id="reload-bitrate">Reload</button>
+        <span class="save-msg" id="msg-bitrate"></span>
+      </div>
+    </div>
+
+  </div><!-- /settings-wrap -->
+</div><!-- /settings-root -->
+
+<script>
+const THEME_KEY = 'trainingsim_theme';
+const USER_KEY  = 'trainingsim_username';
+
+// ── Theme & sidebar ──────────────────────────────────────────────────────────
+function applyTheme(t) {
+  document.body.classList.toggle('light', t === 'light');
+  document.querySelectorAll('.theme-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.theme === t)
+  );
+  localStorage.setItem(THEME_KEY, t);
+}
+applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
+
+(function initSidebar() {
+  const toggle   = document.getElementById('sidebar-toggle');
+  const sidebar  = document.getElementById('sidebar');
+  const overlay  = document.getElementById('sidebar-overlay');
+  const closeBtn = document.getElementById('sidebar-close');
+  const open  = () => { sidebar.classList.add('open');    overlay.classList.add('active'); };
+  const close = () => { sidebar.classList.remove('open'); overlay.classList.remove('active'); };
+  toggle.addEventListener('click', open);
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', close);
+  document.querySelectorAll('.theme-btn').forEach(btn =>
+    btn.addEventListener('click', () => applyTheme(btn.dataset.theme))
+  );
+})();
+
+// ── File System Access API helpers ───────────────────────────────────────────
+// fileHandles stored in memory for this session
+const fileHandles = {};
+
+async function pickAndSave(key, suggestedName, jsonData) {
+  try {
+    let handle = fileHandles[key];
+    if (!handle) {
+      handle = await window.showSaveFilePicker({
+        suggestedName,
+        types: [{ description: 'JSON file', accept: { 'application/json': ['.json'] } }],
+        startIn: 'documents',
+      });
+      fileHandles[key] = handle;
+    }
+    const writable = await handle.createWritable();
+    await writable.write(JSON.stringify(jsonData, null, 2) + '\n');
+    await writable.close();
+    return { ok: true };
+  } catch (e) {
+    if (e.name === 'AbortError') return { ok: false, msg: 'Cancelled' };
+    return { ok: false, msg: e.message };
+  }
+}
+
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = `save-msg show ${type}`;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// ── Config data ──────────────────────────────────────────────────────────────
+let globalCfg = null;
+let bitrateCfg = null;
+
+// ── Populate global fields ───────────────────────────────────────────────────
+function populateGlobal(cfg) {
+  document.getElementById('g-event-title').value      = cfg.card?.title          || '';
+  document.getElementById('g-bot-name').value         = cfg.bot?.name            || '';
+  document.getElementById('g-user-name').value        = cfg.user?.name           || '';
+  document.getElementById('g-user-color').value       = cfg.user?.mentionColor   || '#dea700';
+  document.getElementById('g-avatar-color').value     = cfg.user?.avatarColor    || '#dea700';
+  document.getElementById('g-user-color-picker').value   = hexNorm(cfg.user?.mentionColor || '#dea700');
+  document.getElementById('g-avatar-color-picker').value = hexNorm(cfg.user?.avatarColor  || '#dea700');
+}
+
+// ── Populate bitrate module fields ───────────────────────────────────────────
+function populateBitrate(cfg) {
+  document.getElementById('b-channel').value          = cfg.channel?.name       || '';
+  document.getElementById('b-source').value           = cfg.source?.name        || '';
+  document.getElementById('b-backup-enabled').checked = cfg.source?.backupEnabled ?? false;
+  document.getElementById('b-backup-name').value      = cfg.source?.backupName  || '';
+  document.getElementById('b-bar-title').value        = cfg.training?.barTitle  || '';
+  document.getElementById('b-default-scenario').value = cfg.training?.defaultScenario || '';
+  toggleBackupRow();
+  renderScenarios(cfg.training?.scenarios || []);
+}
+
+function toggleBackupRow() {
+  const show = document.getElementById('b-backup-enabled').checked;
+  document.getElementById('b-backup-row').style.display = show ? 'flex' : 'none';
+}
+document.getElementById('b-backup-enabled').addEventListener('change', toggleBackupRow);
+
+// ── Scenario drag-and-drop list ──────────────────────────────────────────────
+let scenariosData = [];
+let dragSrc = null;
+
+function renderScenarios(scenarios) {
+  scenariosData = scenarios.map(s => ({ ...s }));
+  const list = document.getElementById('scenarios-list');
+  list.innerHTML = '';
+  scenariosData.forEach((sc, i) => {
+    const row = document.createElement('div');
+    row.className = 'scenario-row';
+    row.draggable = true;
+    row.dataset.index = i;
+    row.innerHTML = `
+      <span class="drag-handle" title="Drag to reorder">&#8597;</span>
+      <span class="sc-id-badge">${sc.id}</span>
+      <input class="field-input" type="text" value="${escHtml(sc.label)}" placeholder="Label" data-sc="${i}">
+    `;
+    // drag events
+    row.addEventListener('dragstart', e => {
+      dragSrc = row;
+      row.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging');
+      document.querySelectorAll('.scenario-row').forEach(r => r.classList.remove('drag-over'));
+    });
+    row.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      document.querySelectorAll('.scenario-row').forEach(r => r.classList.remove('drag-over'));
+      row.classList.add('drag-over');
+    });
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      if (!dragSrc || dragSrc === row) return;
+      const srcIdx  = +dragSrc.dataset.index;
+      const destIdx = +row.dataset.index;
+      // Save current label edits before re-render
+      syncScenarioLabels();
+      const [moved] = scenariosData.splice(srcIdx, 1);
+      scenariosData.splice(destIdx, 0, moved);
+      renderScenarios(scenariosData);
+    });
+    list.appendChild(row);
+  });
+}
+
+function syncScenarioLabels() {
+  document.querySelectorAll('[data-sc]').forEach(input => {
+    const i = +input.dataset.sc;
+    if (scenariosData[i]) scenariosData[i].label = input.value;
+  });
+}
+
+// ── Build JSON from form fields ──────────────────────────────────────────────
+function buildGlobalJson() {
+  const cfg = JSON.parse(JSON.stringify(globalCfg)); // deep clone
+  cfg.card  = { ...cfg.card,  title: document.getElementById('g-event-title').value.trim() };
+  cfg.bot   = { ...cfg.bot,   name:  document.getElementById('g-bot-name').value.trim() };
+  cfg.user  = {
+    ...cfg.user,
+    name:         document.getElementById('g-user-name').value.trim(),
+    mentionColor: document.getElementById('g-user-color').value.trim() || '#dea700',
+    avatarColor:  document.getElementById('g-avatar-color').value.trim() || '#dea700',
+  };
+  return cfg;
+}
+
+function buildBitrateJson() {
+  syncScenarioLabels();
+  const cfg = JSON.parse(JSON.stringify(bitrateCfg));
+  cfg.channel = { ...cfg.channel, name: document.getElementById('b-channel').value.trim() };
+  const backupEnabled = document.getElementById('b-backup-enabled').checked;
+  cfg.source = {
+    ...cfg.source,
+    name:          document.getElementById('b-source').value.trim(),
+    backupEnabled,
+    backupName:    backupEnabled ? document.getElementById('b-backup-name').value.trim() : (cfg.source?.backupName || ''),
+  };
+  cfg.training = {
+    ...cfg.training,
+    barTitle:        document.getElementById('b-bar-title').value.trim(),
+    defaultScenario: document.getElementById('b-default-scenario').value.trim(),
+    scenarios: scenariosData.map(sc => ({ id: sc.id, label: sc.label })),
+  };
+  return cfg;
+}
+
+// ── Save buttons ─────────────────────────────────────────────────────────────
+document.getElementById('save-global').addEventListener('click', async () => {
+  const btn = document.getElementById('save-global');
+  btn.disabled = true;
+  const data = buildGlobalJson();
+  globalCfg = data; // update in-memory copy
+  const result = await pickAndSave('global', 'config.json', data);
+  btn.disabled = false;
+  showMsg('msg-global', result.ok ? 'Saved!' : ('Error: ' + result.msg), result.ok ? 'ok' : 'err');
+});
+
+document.getElementById('save-bitrate').addEventListener('click', async () => {
+  const btn = document.getElementById('save-bitrate');
+  btn.disabled = true;
+  const data = buildBitrateJson();
+  bitrateCfg = data;
+  const result = await pickAndSave('bitrate', 'config.json', data);
+  btn.disabled = false;
+  showMsg('msg-bitrate', result.ok ? 'Saved!' : ('Error: ' + result.msg), result.ok ? 'ok' : 'err');
+});
+
+// ── Reload buttons ────────────────────────────────────────────────────────────
+document.getElementById('reload-global').addEventListener('click', async () => {
+  try {
+    const r = await fetch('config.json?_=' + Date.now());
+    globalCfg = await r.json();
+    populateGlobal(globalCfg);
+    showMsg('msg-global', 'Reloaded from file', 'ok');
+  } catch (e) { showMsg('msg-global', 'Reload failed: ' + e.message, 'err'); }
+});
+
+document.getElementById('reload-bitrate').addEventListener('click', async () => {
+  try {
+    const r = await fetch('modules/bitrate/config.json?_=' + Date.now());
+    bitrateCfg = await r.json();
+    populateBitrate(bitrateCfg);
+    showMsg('msg-bitrate', 'Reloaded from file', 'ok');
+  } catch (e) { showMsg('msg-bitrate', 'Reload failed: ' + e.message, 'err'); }
+});
+
+// ── Color picker sync ─────────────────────────────────────────────────────────
+function syncColorPicker(pickerId, textId) {
+  document.getElementById(pickerId).addEventListener('input', e => {
+    document.getElementById(textId).value = e.target.value;
+  });
+  document.getElementById(textId).addEventListener('input', e => {
+    const v = e.target.value.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(v)) document.getElementById(pickerId).value = v;
+  });
+}
+syncColorPicker('g-user-color-picker',   'g-user-color');
+syncColorPicker('g-avatar-color-picker', 'g-avatar-color');
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+function hexNorm(hex) {
+  // Ensure #rrggbb for <input type=color>
+  if (/^#[0-9a-fA-F]{6}$/.test(hex)) return hex;
+  return '#dea700';
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Boot: load both configs ───────────────────────────────────────────────────
+(async function boot() {
+  const root    = document.getElementById('settings-root');
+  const loading = document.getElementById('loading');
+  const errEl   = document.getElementById('error-msg');
+
+  // Check if File System Access API is supported
+  if (!window.showSaveFilePicker) {
+    document.getElementById('fs-notice').innerHTML =
+      '<b>Note:</b> Your browser does not support the File System Access API. ' +
+      'You can still edit settings here, but you will need to use the ' +
+      '<b>Raw JSON</b> view at the bottom of each section and copy-paste the output manually.';
+  }
+
+  try {
+    const [r1, r2] = await Promise.all([
+      fetch('config.json?_='                  + Date.now()),
+      fetch('modules/bitrate/config.json?_=' + Date.now()),
+    ]);
+    if (!r1.ok) throw new Error('config.json — HTTP ' + r1.status);
+    if (!r2.ok) throw new Error('modules/bitrate/config.json — HTTP ' + r2.status);
+    globalCfg  = await r1.json();
+    bitrateCfg = await r2.json();
+  } catch (e) {
+    loading.style.display = 'none';
+    errEl.style.display   = 'block';
+    errEl.textContent     = 'Failed to load config files: ' + e.message;
+    return;
+  }
+
+  loading.style.display  = 'none';
+  root.style.display     = 'flex';
+
+  populateGlobal(globalCfg);
+  populateBitrate(bitrateCfg);
+})();
+</script>
+</body>
+</html>

@@ -2,12 +2,29 @@
   "password": "liveops123",
   "title": "Live Ops",
   "subtitle": "Select a training module to begin",
-  "modules": [
+  "categories": [
     {
-      "name": "Bitrates",
-      "description": "Delay or cancel job simulation for live stream operations. Practice handling source bitrate checks, delays, and abandons.",
-      "url": "liveintro.html",
-      "tag": "live"
+      "id": "shells",
+      "label": "Shells",
+      "modules": []
+    },
+    {
+      "id": "live-intro",
+      "label": "Live Intro",
+      "modules": [
+        {
+          "id": "bitrate",
+          "name": "Bitrates",
+          "description": "Practice handling source bitrate checks, delays, and abandons for live stream jobs.",
+          "url": "modules/bitrate/bitrate.html",
+          "tag": "live"
+        }
+      ]
+    },
+    {
+      "id": "vods",
+      "label": "VODs",
+      "modules": []
     }
   ]
 }
