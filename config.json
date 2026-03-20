@@ -1,7 +1,7 @@
 {
   "channel": {
-    "name": "stream-ops",
-    "topic": "UEFA Champions League 2025/2026 — Live broadcast control"
+    "name": "live",
+    "topic": ":ready: :ready: :ready:"
   },
 
   "bot": {
@@ -11,73 +11,31 @@
   },
 
   "card": {
-    "title": "Delay Or Cancel Job: Arsenal v Bayer Leverkusen - UEFA Champions League 2025/2026 [6298054D]",
-    "mention": "Tom Don",
-    "body": "Stream for this asset will start in 5 mins",
-    "time": "06:23"
+    "title": "Sahar v Lachlan - Live Ops Brawl 2026 [6767677B]"
   },
 
-  "responder": {
-    "name": "Tom Don",
-    "avatar": "",
-    "avatarColor": "#2c7be5"
+  "user": {
+    "name": "Kaylee",
+    "mentionColor": "#dea700",
+    "avatar": "pfp.png",
+    "avatarColor": "#dea700"
   },
 
-  "buttons": [
-    {
-      "id": "start",
-      "label": "Start Now",
-      "reply": {
-        "title": "✅ Job Started",
-        "dot": "green",
-        "text": "Stream [6298054D] is now live. Monitoring active — bitrate nominal at 8.4 Mbps.",
-        "reactions": ["👍 3", "🚀 1"],
-        "disableAll": true
-      }
-    },
-    {
-      "id": "delay",
-      "label": "Delay for 5min",
-      "reply": {
-        "title": "⏳ Delayed by 5 minutes",
-        "dot": "yellow",
-        "text": "Job [6298054D] has been pushed back. New start window: 06:28. Standing by.",
-        "reactions": ["👍 2"],
-        "disableAll": false
-      }
-    },
-    {
-      "id": "abandon",
-      "label": "Abandon",
-      "reply": {
-        "title": "Job Abandoned",
-        "dot": "red",
-        "text": "Stream [6298054D] has been cancelled. No output will be produced. Notify scheduling if re-run is needed.",
-        "reactions": ["❌ 1"],
-        "disableAll": true
-      }
-    },
-    {
-      "id": "bitrate",
-      "label": "Check Source Bitrate",
-      "reply": {
-        "title": "📡 Source Bitrate Report",
-        "dot": "blue",
-        "text": "SOURCE_BITRATE_TABLE",
-        "reactions": [],
-        "disableAll": false
-      }
-    },
-    {
-      "id": "backup",
-      "label": "Check bitrate (Backup)",
-      "reply": {
-        "title": "📡 Backup Bitrate Report",
-        "dot": "blue",
-        "text": "BACKUP_BITRATE_TABLE",
-        "reactions": [],
-        "disableAll": false
-      }
-    }
-  ]
+  "source": {
+    "name": "ampp25",
+    "backupEnabled": true,
+    "backupName": "tbs25"
+  },
+
+  "training": {
+    "barTitle": "Training Scenario",
+    "defaultScenario": "down",
+    "scenarios": [
+      { "id": "down",     "label": "Scenario 1" },
+      { "id": "onesided", "label": "Scenario 2" },
+      { "id": "zigzag",   "label": "Scenario 3" },
+      { "id": "drops",    "label": "Scenario 4" },
+      { "id": "normal",   "label": "Scenario 5" }
+    ]
+  }
 }

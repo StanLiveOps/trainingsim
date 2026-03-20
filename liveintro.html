@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stream Control — Training Sim</title>
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #1a1d21;
+  --surface: #222529;
+  --surface2: #2a2d31;
+  --border: #383b42;
+  --text: #d1d2d3;
+  --text-muted: #8b9196;
+  --text-bright: #f2f3f5;
+  --accent: #c0175d;
+  --accent-hover: #d9185e;
+  --accent-press: #a01550;
+  --timestamp: #8b9196;
+  --hover-bg: rgba(255,255,255,0.04);
+  --purple-bar: #7c5cbf;
+}
+
+body {
+  font-family: 'Lato', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px 80px;
+}
+
+/* ── Training bar ── */
+#training-bar {
+  width: 100%;
+  max-width: 720px;
+  background: #0f1117;
+  border: 1px solid #383b42;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 28px;
+}
+#training-bar h3 {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.scenario-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.scenario-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-family: 'Lato', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.scenario-btn:hover { background: var(--border); }
+.scenario-btn.active {
+  background: var(--purple-bar);
+  border-color: var(--purple-bar);
+  color: #fff;
+}
+#reset-btn {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-family: 'Lato', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+#reset-btn:hover { background: var(--border); color: var(--text); }
+
+/* ── Channel header ── */
+.channel-header {
+  width: 100%; max-width: 720px;
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 24px; padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+.channel-header .hash { font-size: 22px; color: var(--text-muted); font-weight: 900; }
+.channel-header .ch-name { font-size: 17px; font-weight: 900; color: var(--text-bright); }
+.channel-header .topic {
+  font-size: 13px; color: var(--text-muted);
+  margin-left: 4px; padding-left: 12px;
+  border-left: 1px solid var(--border);
+  display: flex; align-items: center; gap: 4px;
+}
+.topic-emoji { height: 16px; width: auto; vertical-align: middle; }
+
+/* ── Messages ── */
+.messages { width: 100%; max-width: 720px; display: flex; flex-direction: column; gap: 2px; }
+
+.date-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 20px 0; color: var(--text-muted);
+  font-size: 12px; font-weight: 700;
+}
+.date-divider::before, .date-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── Message row ── */
+.message {
+  display: flex; gap: 12px; padding: 4px 12px;
+  border-radius: 8px;
+  transition: background 0.12s;
+  position: relative;
+}
+.message:hover { background: var(--hover-bg); }
+.message:hover .react-toolbar { opacity: 1; pointer-events: auto; }
+
+/* ── React toolbar ── */
+.react-toolbar {
+  position: absolute;
+  right: 12px; top: 4px;
+  display: flex; gap: 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 8px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.12s;
+  z-index: 10;
+}
+.react-toolbar button {
+  background: none; border: none;
+  font-size: 16px; cursor: pointer;
+  padding: 2px 4px; border-radius: 4px;
+  transition: background 0.1s; line-height: 1;
+}
+.react-toolbar button:hover { background: var(--border); }
+
+/* ── Avatar ── */
+.avatar {
+  width: 36px; height: 36px; border-radius: 6px;
+  flex-shrink: 0; margin-top: 2px;
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 14px; color: #fff;
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.message-body { flex: 1; min-width: 0; }
+
+.message-meta { display: flex; align-items: baseline; gap: 8px; margin-bottom: 3px; }
+.sender { font-weight: 900; font-size: 15px; color: var(--text-bright); cursor: pointer; }
+.sender:hover { text-decoration: underline; }
+.badge {
+  font-size: 10px; font-weight: 700;
+  background: var(--surface2); color: var(--text-muted);
+  border: 1px solid var(--border); border-radius: 3px;
+  padding: 1px 5px; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.timestamp { font-size: 12px; color: var(--timestamp); }
+
+.message-text { font-size: 15px; line-height: 1.5; color: var(--text); }
+.message-title { font-weight: 700; color: var(--text-bright); font-size: 15px; }
+.edited-label { font-size: 11px; color: var(--text-muted); margin-left: 4px; }
+.mention { border-radius: 3px; padding: 0 2px; font-weight: 700; }
+
+/* ── App card (purple bar, sits inside message-body) ── */
+.app-card {
+  border-left: 3px solid var(--purple-bar);
+  padding: 8px 14px;
+  margin-top: 4px;
+  background: rgba(124,92,191,0.05);
+  border-radius: 0 8px 8px 0;
+}
+
+/* ── Buttons ── */
+.buttons-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.action-btn {
+  background: var(--accent); color: #fff; border: none;
+  border-radius: 6px; padding: 8px 16px;
+  font-family: 'Lato', sans-serif; font-size: 14px; font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s, transform 0.08s, box-shadow 0.12s;
+  position: relative;
+}
+.action-btn:hover { background: var(--accent-hover); box-shadow: 0 2px 8px rgba(192,23,93,0.4); }
+.action-btn:active { background: var(--accent-press); transform: scale(0.97); }
+.action-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+.action-btn.loading { color: transparent; pointer-events: none; }
+.action-btn.loading::after {
+  content: ''; position: absolute;
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-top-color: #fff; border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+/* ── Reply slide-in ── */
+.reply { animation: slideIn 0.22s cubic-bezier(0.34,1.2,0.64,1) both; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Reactions ── */
+.reactions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.reaction {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 2px 9px;
+  font-size: 13px; cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+  user-select: none;
+}
+.reaction:hover { background: var(--border); }
+.reaction.reacted {
+  background: rgba(29,155,209,0.15);
+  border-color: rgba(29,155,209,0.5);
+}
+.reaction-count { color: var(--text-muted); font-weight: 700; font-size: 12px; }
+
+/* ── Bitrate chart ── */
+.chart-wrap {
+  margin-top: 10px;
+  background: #fff;
+  border-radius: 6px;
+  padding: 10px 14px 6px;
+  width: 100%;
+  max-width: 620px;
+}
+.chart-title-row {
+  font-size: 12px; font-weight: 700; color: #333; margin-bottom: 1px;
+}
+.chart-sub-row {
+  font-size: 11px; color: #666; margin-bottom: 6px;
+}
+.chart-canvas-wrap { position: relative; height: 155px; }
+
+/* ── Loading / error ── */
+#loading { color: var(--text-muted); font-size: 14px; padding: 40px 0; display: flex; align-items: center; gap: 10px; }
+.spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--text-muted); border-radius: 50%; animation: spin 0.7s linear infinite; }
+#error { color: #e01e5a; font-size: 14px; padding: 40px 0; }
+
+/* ── Light mode ── */
+body.light {
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --surface2: #ebecf0;
+  --border: #dfe1e6;
+  --text: #172b4d;
+  --text-muted: #6b778c;
+  --text-bright: #091e42;
+  --hover-bg: rgba(0,0,0,0.04);
+  --timestamp: #6b778c;
+}
+body.light #training-bar { background: #e8eaf0; }
+body.light .app-card { background: rgba(124,92,191,0.06); }
+
+/* ── Sidebar toggle ── */
+#sidebar-toggle {
+  position: fixed; top: 14px; left: 14px; z-index: 200;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; width: 36px; height: 36px;
+  font-size: 18px; cursor: pointer; color: var(--text);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.12s; line-height: 1;
+}
+#sidebar-toggle:hover { background: var(--border); }
+
+/* ── Sidebar overlay ── */
+#sidebar-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  z-index: 300; opacity: 0; pointer-events: none;
+  transition: opacity 0.25s;
+}
+#sidebar-overlay.active { opacity: 1; pointer-events: auto; }
+
+/* ── Sidebar panel ── */
+#sidebar {
+  position: fixed; top: 0; left: -270px;
+  width: 250px; height: 100%;
+  background: var(--surface); border-right: 1px solid var(--border);
+  z-index: 400; display: flex; flex-direction: column;
+  transition: left 0.25s cubic-bezier(0.4,0,0.2,1); overflow-y: auto;
+}
+#sidebar.open { left: 0; }
+
+.sidebar-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 16px 12px; border-bottom: 1px solid var(--border);
+}
+.sidebar-header span { font-weight: 900; font-size: 15px; color: var(--text-bright); }
+#sidebar-close {
+  background: none; border: none; font-size: 22px; line-height: 1;
+  cursor: pointer; color: var(--text-muted); padding: 2px 6px; border-radius: 4px;
+}
+#sidebar-close:hover { background: var(--border); color: var(--text); }
+
+.sidebar-nav { padding: 10px 10px 0; }
+.sidebar-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 8px;
+  text-decoration: none; color: var(--text);
+  font-size: 14px; font-weight: 700; transition: background 0.12s;
+}
+.sidebar-link:hover { background: var(--hover-bg); }
+
+.sidebar-section {
+  padding: 14px 16px; border-top: 1px solid var(--border); margin-top: 6px;
+}
+.sidebar-label {
+  font-size: 10px; font-weight: 900; text-transform: uppercase;
+  letter-spacing: 0.09em; color: var(--text-muted); margin-bottom: 10px;
+}
+.theme-row { display: flex; gap: 8px; }
+.theme-btn {
+  flex: 1; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 7px;
+  font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700;
+  color: var(--text); cursor: pointer; transition: background 0.12s, border-color 0.12s;
+}
+.theme-btn:hover { background: var(--border); }
+.theme-btn.active { background: var(--purple-bar); border-color: var(--purple-bar); color: #fff; }
+
+.sidebar-user { font-size: 14px; font-weight: 700; color: var(--text-bright); margin-bottom: 10px; }
+.sidebar-user small { display: block; font-weight: 400; font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+#reset-name-btn {
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 12px;
+  font-family: 'Lato', sans-serif; font-size: 12px;
+  color: var(--text-muted); cursor: pointer; transition: background 0.12s;
+}
+#reset-name-btn:hover { background: var(--border); color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<button id="sidebar-toggle">&#9776;</button>
+<div id="sidebar-overlay"></div>
+<div id="sidebar">
+  <div class="sidebar-header">
+    <span>Menu</span>
+    <button id="sidebar-close">&times;</button>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="index.html" class="sidebar-link">&#8592; Home</a>
+  </nav>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Theme</div>
+    <div class="theme-row">
+      <button class="theme-btn" data-theme="dark">Dark</button>
+      <button class="theme-btn" data-theme="light">Light</button>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Logged in as</div>
+    <div class="sidebar-user" id="sidebar-username"></div>
+    <button id="reset-name-btn">Reset name</button>
+  </div>
+</div>
+
+<div id="loading"><div class="spinner"></div> Loading...</div>
+<div id="error" style="display:none;"></div>
+<div id="app" style="display:none; width:100%; flex-direction:column; align-items:center;">
+
+  <!-- Training bar — populated from config.json -->
+  <div id="training-bar">
+    <h3 id="bar-title"></h3>
+    <div class="scenario-btns" id="scenario-btns">
+      <button id="reset-btn">Reset</button>
+    </div>
+  </div>
+
+  <!-- Channel header -->
+  <div class="channel-header">
+    <span class="hash">#</span>
+    <span class="ch-name" id="ch-name"></span>
+    <span class="topic" id="ch-topic"></span>
+  </div>
+
+  <div class="messages" id="messages">
+    <div class="date-divider" id="date-divider">Today</div>
+  </div>
+</div>
+
+<script>
+// ─── Utilities ───────────────────────────────────────────────────────────────
+
+const pad = n => String(n).padStart(2,'0');
+
+function nowTime() {
+  const t = new Date();
+  return `${pad(t.getHours())}:${pad(t.getMinutes())}`;
+}
+
+function todayLabel() {
+  const d = new Date();
+  return d.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+}
+
+function makeAvatar(name, avatarFile, fallbackColor) {
+  const el = document.createElement('div');
+  el.className = 'avatar';
+  if (avatarFile) {
+    el.style.background = 'transparent';
+    const img = document.createElement('img');
+    img.src = avatarFile;
+    img.alt = name;
+    img.onerror = () => {
+      img.remove();
+      el.style.background = fallbackColor || '#555';
+      el.textContent = name[0].toUpperCase();
+    };
+    el.appendChild(img);
+  } else {
+    el.style.background = fallbackColor || '#555';
+    el.textContent = name[0].toUpperCase();
+  }
+  return el;
+}
+
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+// ─── Chart data generators ────────────────────────────────────────────────────
+
+function makeTimeLabels(count) {
+  const labels = [];
+  const now = new Date();
+  for (let i = count - 1; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * 60000);
+    labels.push(i % 5 === 0 ? `${pad(d.getHours())}:${pad(d.getMinutes())}` : '');
+  }
+  return labels;
+}
+
+function jitter(base, range, count) {
+  return Array.from({length: count}, () => base + (Math.random() - 0.5) * 2 * range);
+}
+
+function getScenarioData(scenario, count) {
+  count = count || 60;
+  switch (scenario) {
+    case 'down':
+      // Truly flat at 0 — let Chart.js auto-scale y-axis to ~1
+      return {
+        left:  Array.from({length: count}, () => 0),
+        right: Array.from({length: count}, () => 0),
+        yMin: 0, yMax: undefined,
+      };
+    case 'onesided':
+      return {
+        left:  jitter(25000000, 280000, count),
+        right: Array.from({length: count}, () => 0),
+        yMin: 0, yMax: 30000000,
+      };
+    case 'zigzag': {
+      const base = 25000000;
+      return {
+        left:  Array.from({length: count}, (_, i) => base + Math.sin(i * 0.9) * 380000 + (Math.random()-0.5)*180000),
+        right: Array.from({length: count}, (_, i) => base + Math.cos(i * 1.0) * 320000 + (Math.random()-0.5)*180000),
+        yMin: 23500000, yMax: 26500000,
+      };
+    }
+    case 'drops': {
+      // Mostly normal but with several sharp drops to 0
+      const base = 25000000;
+      const makeDropData = () => {
+        const arr = jitter(base, 150000, count);
+        // Three drops at roughly 15%, 40%, 70% through the hour
+        const dropCentres = [
+          Math.floor(count * 0.15),
+          Math.floor(count * 0.40),
+          Math.floor(count * 0.70),
+        ];
+        dropCentres.forEach(c => {
+          for (let d = -1; d <= 1; d++) {
+            const idx = c + d;
+            if (idx >= 0 && idx < count) arr[idx] = 0;
+          }
+        });
+        return arr;
+      };
+      return {
+        left:  makeDropData(),
+        right: makeDropData(),
+        yMin: 0, yMax: 30000000,
+      };
+    }
+    case 'normal':
+    default:
+      return {
+        left:  jitter(25000000, 150000, count),
+        right: jitter(25200000, 170000, count),
+        yMin: 0, yMax: 30000000,
+      };
+  }
+}
+
+function formatBits(val) {
+  if (val >= 1000000) return (val / 1000000).toFixed(2) + 'M';
+  if (val >= 1000)    return (val / 1000).toFixed(1) + 'k';
+  if (val > 0 && val < 1) return val.toFixed(2);
+  return Math.round(val).toString();
+}
+
+// ─── Chart builder ─────────────────────────────────────────────────────────────
+
+let chartIdCounter = 0;
+
+function buildChart(sourceName, scenario) {
+  const COUNT = 60;
+  const data   = getScenarioData(scenario, COUNT);
+  const labels = makeTimeLabels(COUNT);
+  const kbSize = 24 + Math.floor(Math.random() * 4);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'chart-wrap';
+
+  wrap.innerHTML = `
+    <div class="chart-title-row">Maximum Bitrate (1s) over 1 hours</div>
+    <div class="chart-sub-row">${sourceName}: Maximum Bitrate (1s) over 1 hours (${kbSize} kB)</div>
+    <div class="chart-canvas-wrap"><canvas id="chart-${++chartIdCounter}"></canvas></div>
+  `;
+
+  const canvas = wrap.querySelector('canvas');
+
+  requestAnimationFrame(() => {
+    new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: sourceName + ' left',
+            data: data.left,
+            borderColor: '#1a73e8',
+            backgroundColor: 'rgba(26,115,232,0.08)',
+            borderWidth: 1.5,
+            pointRadius: 0,
+            tension: 0.3,
+            pointStyle: 'rectRounded',
+          },
+          {
+            label: sourceName + ' right',
+            data: data.right,
+            borderColor: '#f4a636',
+            backgroundColor: 'rgba(244,166,54,0.08)',
+            borderWidth: 1.5,
+            pointRadius: 0,
+            tension: 0.3,
+            pointStyle: 'rectRounded',
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 400 },
+        scales: {
+          x: {
+            ticks: { font:{size:9}, color:'#888', maxRotation:0, autoSkip:false },
+            grid:  { color:'#eee' }
+          },
+          y: {
+            min: data.yMin,
+            ...(data.yMax !== undefined ? { max: data.yMax } : {}),
+            ticks: { font:{size:9}, color:'#888', callback: v => formatBits(v), maxTicksLimit:6 },
+            grid:  { color:'#eee' },
+            title: { display:true, text:'Bits/Second', font:{size:9}, color:'#888' }
+          }
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'bottom',
+            labels: {
+              font:            { size:10 },
+              color:           '#555',
+              pointStyle:      'rectRounded',
+              usePointStyle:   true,
+              pointStyleWidth: 14,
+              generateLabels: (chart) => chart.data.datasets.map((ds, i) => ({
+                text:         ds.label,
+                fillStyle:    ds.borderColor,
+                strokeStyle:  ds.borderColor,
+                pointStyle:   'rectRounded',
+                hidden:       false,
+                datasetIndex: i,
+              })),
+            }
+          },
+          tooltip: {
+            callbacks: { label: ctx => `${ctx.dataset.label}: ${formatBits(ctx.parsed.y)}` }
+          }
+        }
+      }
+    });
+  });
+
+  return wrap;
+}
+
+// ─── Reaction system ──────────────────────────────────────────────────────────
+
+function makeReactionCtrl(messageEl, initial) {
+  let reactRow = messageEl.querySelector('.reactions');
+  if (!reactRow) {
+    reactRow = document.createElement('div');
+    reactRow.className = 'reactions';
+    messageEl.querySelector('.message-body').appendChild(reactRow);
+  }
+
+  const state = {};
+  (initial || []).forEach(item => {
+    const parts = item.split(' ');
+    const emoji = parts[0];
+    const count = parseInt(parts[1]) || 1;
+    state[emoji] = { count, reacted: false };
+  });
+
+  function render() {
+    reactRow.innerHTML = '';
+    Object.entries(state).forEach(([emoji, info]) => {
+      if (info.count <= 0) return;
+      const btn = document.createElement('span');
+      btn.className = 'reaction' + (info.reacted ? ' reacted' : '');
+      btn.innerHTML = `${emoji} <span class="reaction-count">${info.count}</span>`;
+      btn.title = info.reacted ? 'Remove reaction' : 'Add reaction';
+      btn.addEventListener('click', () => {
+        info.reacted ? (info.count--, info.reacted=false) : (info.count++, info.reacted=true);
+        render();
+      });
+      reactRow.appendChild(btn);
+    });
+  }
+
+  render();
+  return { state, render };
+}
+
+function addReactToolbar(messageEl, ctrl) {
+  const toolbar = document.createElement('div');
+  toolbar.className = 'react-toolbar';
+
+  ['✅','👍'].forEach(emoji => {
+    const btn = document.createElement('button');
+    btn.textContent = emoji;
+    btn.title = 'React with ' + emoji;
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (!ctrl.state[emoji]) ctrl.state[emoji] = { count:0, reacted:false };
+      const info = ctrl.state[emoji];
+      info.reacted ? (info.count--, info.reacted=false) : (info.count++, info.reacted=true);
+      ctrl.render();
+    });
+    toolbar.appendChild(btn);
+  });
+
+  messageEl.appendChild(toolbar);
+}
+
+// ─── Render helpers ───────────────────────────────────────────────────────────
+
+function renderMessage({ avatar, name, badge, time, children, initialReactions }) {
+  const row = document.createElement('div');
+  row.className = 'message';
+  row.appendChild(avatar);
+
+  const body = document.createElement('div');
+  body.className = 'message-body';
+
+  const meta = document.createElement('div');
+  meta.className = 'message-meta';
+  meta.innerHTML = `
+    <span class="sender">${name}</span>
+    ${badge ? `<span class="badge">${badge}</span>` : ''}
+    <span class="timestamp">${time}</span>`;
+  body.appendChild(meta);
+  children.forEach(c => body.appendChild(c));
+  row.appendChild(body);
+
+  const ctrl = makeReactionCtrl(row, initialReactions || []);
+  addReactToolbar(row, ctrl);
+  return row;
+}
+
+function appendToMessages(el) {
+  const msgs = document.getElementById('messages');
+  msgs.appendChild(el);
+  el.scrollIntoView({ behavior:'smooth', block:'end' });
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
+let CFG = null;
+let currentScenario = 'normal';
+let allBtns = [];
+
+async function init() {
+  try {
+    const res = await fetch('config.json?_=' + Date.now());
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    CFG = await res.json();
+  } catch (e) {
+    document.getElementById('loading').style.display = 'none';
+    const err = document.getElementById('error');
+    err.style.display = 'block';
+    err.textContent = 'Could not load config.json — ' + e.message;
+    return;
+  }
+
+  // Override user.name with whatever was entered at the welcome screen
+  const savedUsername = localStorage.getItem(USER_KEY);
+  if (savedUsername) CFG.user.name = savedUsername;
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+
+  document.getElementById('date-divider').textContent = todayLabel();
+  document.getElementById('ch-name').textContent = CFG.channel.name;
+
+  // Topic with ready.png image repeated 3 times
+  const topicEl = document.getElementById('ch-topic');
+  topicEl.innerHTML = '';
+  for (let i = 0; i < 3; i++) {
+    const img = document.createElement('img');
+    img.src = 'images/ready.png';
+    img.className = 'topic-emoji';
+    img.alt = 'ready';
+    topicEl.appendChild(img);
+    if (i < 2) topicEl.appendChild(document.createTextNode('\u00a0'));
+  }
+
+  // Training bar title + scenario buttons from config
+  document.getElementById('bar-title').textContent = CFG.training?.barTitle || 'Training Scenario';
+  currentScenario = CFG.training?.defaultScenario || 'normal';
+  const scenarioBtns = document.getElementById('scenario-btns');
+  const resetBtn = document.getElementById('reset-btn');
+  (CFG.training?.scenarios || []).forEach(sc => {
+    const btn = document.createElement('button');
+    btn.className = 'scenario-btn';
+    btn.dataset.scenario = sc.id;
+    btn.textContent = sc.label;
+    if (sc.id === currentScenario) btn.classList.add('active');
+    btn.addEventListener('click', () => {
+      currentScenario = sc.id;
+      document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      buildSim();
+    });
+    scenarioBtns.insertBefore(btn, resetBtn);
+  });
+
+  document.getElementById('reset-btn').addEventListener('click', buildSim);
+
+  buildSim();
+}
+
+function buildSim() {
+  allBtns = [];
+  const msgs = document.getElementById('messages');
+  const divider = document.getElementById('date-divider');
+  while (divider.nextSibling) divider.nextSibling.remove();
+
+  const eventTitle = CFG.card.title || '';
+  const jobIdMatch = eventTitle.match(/\[([^\]]+)\]/);
+  const jobId      = jobIdMatch ? jobIdMatch[1] : 'UNKNOWN';
+
+  const startTime = nowTime();
+
+  // ── App card (inside the bot message body) ──
+  const cardTitle = document.createElement('div');
+  cardTitle.className = 'message-title';
+  cardTitle.textContent = 'Delay Or Cancel Job: ' + eventTitle;
+
+  const mentionColor = CFG.user.mentionColor || '#1d9bd1';
+  const mentionBg    = hexToRgba(mentionColor, 0.15);
+
+  const cardBody = document.createElement('div');
+  cardBody.className = 'message-text';
+  cardBody.style.marginTop = '4px';
+  cardBody.innerHTML = `Hey <span class="mention" style="color:${mentionColor};background:${mentionBg};">@${CFG.user.name}</span> Stream for this asset will start in 5 mins`;
+
+  const btnRow = document.createElement('div');
+  btnRow.className = 'buttons-row';
+  btnRow.id = 'btn-row';
+
+  const card = document.createElement('div');
+  card.className = 'app-card';
+  card.appendChild(cardTitle);
+  card.appendChild(cardBody);
+  card.appendChild(btnRow);
+
+  // Bot row — card goes inside message body as a child
+  const botAvatar = makeAvatar(CFG.bot.name, 'images/' + (CFG.bot.avatar || 'jared.png'), '#4a154b');
+  const botRow = renderMessage({
+    avatar:   botAvatar,
+    name:     CFG.bot.name,
+    badge:    CFG.bot.badge,
+    time:     startTime,
+    children: [card],
+  });
+  msgs.appendChild(botRow);
+
+  // ── Buttons ──
+  const buttons = [
+    { id:'start',   label:'Start Now',              disableAll:true  },
+    { id:'delay',   label:'Delay for 5min',          disableAll:false },
+    { id:'abandon', label:'Abandon',                 disableAll:true  },
+    { id:'bitrate', label:'Check Source Bitrate',    disableAll:false },
+  ];
+  if (CFG.source?.backupEnabled) {
+    buttons.push({ id:'backup', label:'Check bitrate (Backup)', disableAll:false });
+  }
+
+  buttons.forEach(btnCfg => {
+    const btn = document.createElement('button');
+    btn.className = 'action-btn';
+    btn.textContent = btnCfg.label;
+
+    btn.addEventListener('click', () => {
+      btn.classList.add('loading');
+      allBtns.forEach(b => b.disabled = true);
+      setTimeout(() => {
+        btn.classList.remove('loading');
+        handleAction(btnCfg, jobId);
+        if (btnCfg.disableAll) {
+          allBtns.forEach(b => b.disabled = true);
+        } else {
+          allBtns.forEach(b => b.disabled = false);
+          btn.disabled = true;
+        }
+      }, 500 + Math.random() * 400);
+    });
+
+    btnRow.appendChild(btn);
+    allBtns.push(btn);
+  });
+}
+
+function handleAction(btnCfg, jobId) {
+  const userName   = CFG.user.name;
+  const sourceName = CFG.source?.name       || 'ampp10';
+  const backupName = CFG.source?.backupName || 'tbs10';
+  const userAvatar = makeAvatar(CFG.user.name, 'images/' + (CFG.user.avatar || 'pfp.png'), CFG.user.avatarColor || '#555');
+
+  let commandText = '';
+  let extraEl     = null;
+  let initialReactions = [];
+
+  switch (btnCfg.id) {
+    case 'start':
+      commandText = `(${userName}: content job start -jobID ${jobId}: Start Now)`;
+      break;
+    case 'delay':
+      commandText = `(${userName}: cw ${sourceName} delay 5min: Delay for 5min)`;
+      break;
+    case 'abandon':
+      commandText = `(${userName}: content job abandon -jobID ${jobId} -reason "cannot start stream yet": Abandon)`;
+      initialReactions = ['👍'];
+      break;
+    case 'bitrate': {
+      commandText = `(${userName}: cw ${sourceName} bitrate: Check Source Bitrate)`;
+      const subLine = document.createElement('div');
+      subLine.className = 'message-text';
+      subLine.style.cssText = 'font-size:13px;color:var(--text-muted);margin-top:6px;';
+      subLine.innerHTML = `${sourceName}: Maximum Bitrate (1s) over 1 hours (${24 + Math.floor(Math.random()*4)} kB) <span style="color:var(--accent)">&#9660;</span>`;
+      extraEl = document.createElement('div');
+      extraEl.appendChild(subLine);
+      extraEl.appendChild(buildChart(sourceName, currentScenario));
+      break;
+    }
+    case 'backup': {
+      commandText = `(${userName}: cw ${backupName} bitrate: Check bitrate (Backup))`;
+      const subLine = document.createElement('div');
+      subLine.className = 'message-text';
+      subLine.style.cssText = 'font-size:13px;color:var(--text-muted);margin-top:6px;';
+      subLine.innerHTML = `${backupName}: Maximum Bitrate (1s) over 1 hours (${24 + Math.floor(Math.random()*4)} kB) <span style="color:var(--accent)">&#9660;</span>`;
+      extraEl = document.createElement('div');
+      extraEl.appendChild(subLine);
+      extraEl.appendChild(buildChart(backupName, currentScenario));
+      break;
+    }
+  }
+
+  const cmdEl = document.createElement('div');
+  cmdEl.className = 'message-text';
+  cmdEl.style.marginTop = '2px';
+  const cmdSpan     = document.createElement('span');
+  cmdSpan.textContent = commandText;
+  const editedSpan  = document.createElement('span');
+  editedSpan.className = 'edited-label';
+  editedSpan.textContent = ' (edited)';
+  cmdEl.appendChild(cmdSpan);
+  cmdEl.appendChild(editedSpan);
+
+  const children = [cmdEl];
+  if (extraEl) children.push(extraEl);
+
+  const row = renderMessage({
+    avatar: userAvatar,
+    name:   CFG.user.name,
+    badge:  null,
+    time:   nowTime(),
+    children,
+    initialReactions,
+  });
+  row.classList.add('reply');
+  appendToMessages(row);
+}
+
+// ─── Theme & sidebar ─────────────────────────────────────────────────────────
+
+const THEME_KEY = 'trainingsim_theme';
+const USER_KEY  = 'trainingsim_username';
+
+function applyTheme(theme) {
+  document.body.classList.toggle('light', theme === 'light');
+  document.querySelectorAll('.theme-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.theme === theme)
+  );
+  localStorage.setItem(THEME_KEY, theme);
+}
+
+function initSidebar() {
+  const toggle    = document.getElementById('sidebar-toggle');
+  const sidebar   = document.getElementById('sidebar');
+  const overlay   = document.getElementById('sidebar-overlay');
+  const closeBtn  = document.getElementById('sidebar-close');
+  const resetBtn  = document.getElementById('reset-name-btn');
+  const userEl    = document.getElementById('sidebar-username');
+
+  const open  = () => { sidebar.classList.add('open');    overlay.classList.add('active'); };
+  const close = () => { sidebar.classList.remove('open'); overlay.classList.remove('active'); };
+
+  toggle.addEventListener('click', open);
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', close);
+
+  document.querySelectorAll('.theme-btn').forEach(btn =>
+    btn.addEventListener('click', () => applyTheme(btn.dataset.theme))
+  );
+
+  const username = localStorage.getItem(USER_KEY) || 'Unknown';
+  userEl.innerHTML = `${username}<small>Trainee</small>`;
+
+  resetBtn.addEventListener('click', () => {
+    localStorage.removeItem(USER_KEY);
+    location.href = 'index.html';
+  });
+
+  applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
+}
+
+initSidebar();
+init();
+</script>
+</body>
+</html>

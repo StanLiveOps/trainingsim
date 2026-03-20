@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Training Hub</title>
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #1a1d21;
+  --surface: #222529;
+  --surface2: #2a2d31;
+  --border: #383b42;
+  --text: #d1d2d3;
+  --text-muted: #8b9196;
+  --text-bright: #f2f3f5;
+  --hover-bg: rgba(255,255,255,0.04);
+  --accent: #c0175d;
+  --purple-bar: #7c5cbf;
+}
+body.light {
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --surface2: #ebecf0;
+  --border: #dfe1e6;
+  --text: #172b4d;
+  --text-muted: #6b778c;
+  --text-bright: #091e42;
+  --hover-bg: rgba(0,0,0,0.04);
+}
+
+body {
+  font-family: 'Lato', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 60px 24px 80px;
+  transition: background 0.2s, color 0.2s;
+}
+
+/* ── Sidebar toggle ── */
+#sidebar-toggle {
+  position: fixed; top: 14px; left: 14px; z-index: 200;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; width: 36px; height: 36px;
+  font-size: 18px; cursor: pointer; color: var(--text);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.12s; line-height: 1;
+}
+#sidebar-toggle:hover { background: var(--border); }
+
+/* ── Sidebar overlay ── */
+#sidebar-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+#sidebar-overlay.active { opacity: 1; pointer-events: auto; }
+
+/* ── Sidebar panel ── */
+#sidebar {
+  position: fixed; top: 0; left: -270px;
+  width: 250px; height: 100%;
+  background: var(--surface); border-right: 1px solid var(--border);
+  z-index: 400; display: flex; flex-direction: column;
+  transition: left 0.25s cubic-bezier(0.4,0,0.2,1); overflow-y: auto;
+}
+#sidebar.open { left: 0; }
+
+.sidebar-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 16px 12px; border-bottom: 1px solid var(--border);
+}
+.sidebar-header span { font-weight: 900; font-size: 15px; color: var(--text-bright); }
+#sidebar-close {
+  background: none; border: none; font-size: 22px; line-height: 1;
+  cursor: pointer; color: var(--text-muted); padding: 2px 6px; border-radius: 4px;
+}
+#sidebar-close:hover { background: var(--border); color: var(--text); }
+
+.sidebar-section { padding: 14px 16px; border-top: 1px solid var(--border); margin-top: 6px; }
+.sidebar-label {
+  font-size: 10px; font-weight: 900; text-transform: uppercase;
+  letter-spacing: 0.09em; color: var(--text-muted); margin-bottom: 10px;
+}
+.theme-row { display: flex; gap: 8px; }
+.theme-btn {
+  flex: 1; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 7px;
+  font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700;
+  color: var(--text); cursor: pointer; transition: background 0.12s, border-color 0.12s;
+}
+.theme-btn:hover { background: var(--border); }
+.theme-btn.active { background: var(--purple-bar); border-color: var(--purple-bar); color: #fff; }
+
+.sidebar-user { font-size: 14px; font-weight: 700; color: var(--text-bright); margin-bottom: 10px; }
+.sidebar-user small { display: block; font-weight: 400; font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+#reset-name-btn {
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 12px;
+  font-family: 'Lato', sans-serif; font-size: 12px;
+  color: var(--text-muted); cursor: pointer; transition: background 0.12s;
+}
+#reset-name-btn:hover { background: var(--border); color: var(--text); }
+
+/* ── Header ── */
+header {
+  width: 100%; max-width: 760px;
+  margin-bottom: 40px; padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 14px;
+}
+header img.logo { height: 34px; width: auto; }
+.header-text h1 { font-size: 22px; font-weight: 900; color: var(--text-bright); }
+.header-text p  { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+
+/* ── Module grid ── */
+.modules {
+  width: 100%; max-width: 760px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 16px;
+}
+.module-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 22px;
+  text-decoration: none; color: inherit;
+  display: flex; flex-direction: column; gap: 10px;
+  transition: border-color 0.15s, background 0.15s, transform 0.12s;
+}
+.module-card:hover { border-color: var(--purple-bar); background: var(--surface2); transform: translateY(-2px); }
+.module-card:active { transform: translateY(0); }
+
+/* ── Tags ── */
+.module-tag {
+  display: inline-block; align-self: flex-start;
+  font-size: 10px; font-weight: 900; letter-spacing: 0.08em;
+  text-transform: uppercase; border-radius: 4px; padding: 2px 8px;
+  border: 1px solid transparent;
+}
+.tag-live     { background: rgba(192,23,93,0.15);   color: #e8578c;  border-color: rgba(192,23,93,0.35); }
+.tag-vods     { background: rgba(26,115,232,0.15);  color: #5b9de8;  border-color: rgba(26,115,232,0.35); }
+.tag-cms      { background: rgba(43,172,118,0.15);  color: #2bac76;  border-color: rgba(43,172,118,0.35); }
+.tag-airtable { background: rgba(255,184,0,0.15);   color: #d4a017;  border-color: rgba(255,184,0,0.35); }
+.tag-ampp     { background: rgba(124,92,191,0.15);  color: #a98de8;  border-color: rgba(124,92,191,0.35); }
+
+.module-name  { font-size: 17px; font-weight: 900; color: var(--text-bright); }
+.module-desc  { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+.module-arrow { margin-top: auto; font-size: 13px; font-weight: 700; color: var(--purple-bar); }
+
+/* ── Welcome overlay ── */
+#welcome-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+}
+#welcome-overlay.dismissing {
+  animation: fadeOut 0.45s forwards;
+  pointer-events: none;
+}
+@keyframes fadeOut {
+  to { opacity: 0; transform: scale(0.97); }
+}
+
+#welcome-box {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 18px; max-width: 400px; width: 100%; padding: 0 24px;
+  text-align: center;
+}
+#welcome-img {
+  width: 240px; height: auto;
+  animation: sway 2.2s ease-in-out infinite;
+}
+@keyframes sway {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  25%       { transform: translateX(-12px) rotate(-3deg); }
+  75%       { transform: translateX(12px) rotate(3deg); }
+}
+#welcome-heading {
+  font-size: 26px; font-weight: 900; color: var(--text-bright);
+}
+#welcome-sub {
+  font-size: 15px; color: var(--text-muted); margin-top: -8px;
+}
+#name-input {
+  width: 100%; padding: 10px 14px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; font-family: 'Lato', sans-serif;
+  font-size: 15px; color: var(--text-bright);
+  outline: none; transition: border-color 0.15s;
+}
+#name-input:focus { border-color: var(--purple-bar); }
+#name-input::placeholder { color: var(--text-muted); }
+#name-submit {
+  width: 100%; padding: 10px;
+  background: var(--accent); color: #fff; border: none;
+  border-radius: 8px; font-family: 'Lato', sans-serif;
+  font-size: 15px; font-weight: 900; cursor: pointer;
+  transition: background 0.12s;
+}
+#name-submit:hover { background: #d9185e; }
+/* returning user — no form shown */
+#name-form { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+
+/* ── Password step ── */
+#password-panel { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+#pw-input {
+  width: 100%; padding: 10px 14px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; font-family: 'Lato', sans-serif;
+  font-size: 15px; color: var(--text-bright);
+  outline: none; transition: border-color 0.15s; letter-spacing: 0.05em;
+}
+#pw-input:focus { border-color: var(--purple-bar); }
+#pw-input::placeholder { color: var(--text-muted); letter-spacing: 0; }
+#pw-input.error { border-color: #e01e5a; animation: shake 0.4s ease; }
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%      { transform: translateX(-8px); }
+  40%      { transform: translateX(8px); }
+  60%      { transform: translateX(-6px); }
+  80%      { transform: translateX(6px); }
+}
+#pw-submit {
+  width: 100%; padding: 10px;
+  background: var(--accent); color: #fff; border: none;
+  border-radius: 8px; font-family: 'Lato', sans-serif;
+  font-size: 15px; font-weight: 900; cursor: pointer;
+  transition: background 0.12s;
+}
+#pw-submit:hover { background: #d9185e; }
+#pw-error {
+  font-size: 13px; color: #e01e5a; text-align: center; min-height: 18px;
+}
+
+/* ── Loading / error ── */
+#loading { color: var(--text-muted); font-size: 14px; padding: 40px 0; display: flex; align-items: center; gap: 10px; }
+.spinner  { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--text-muted); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+#error { color: #e01e5a; font-size: 14px; padding: 40px 0; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<button id="sidebar-toggle">&#9776;</button>
+<div id="sidebar-overlay"></div>
+<div id="sidebar">
+  <div class="sidebar-header">
+    <span>Menu</span>
+    <button id="sidebar-close">&times;</button>
+  </div>
+  <div class="sidebar-section" style="border-top:none; margin-top:0;">
+    <div class="sidebar-label">Theme</div>
+    <div class="theme-row">
+      <button class="theme-btn" data-theme="dark">Dark</button>
+      <button class="theme-btn" data-theme="light">Light</button>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Logged in as</div>
+    <div class="sidebar-user" id="sidebar-username"></div>
+    <button id="reset-name-btn">Reset name</button>
+  </div>
+</div>
+
+<!-- Welcome overlay — always shown on load -->
+<div id="welcome-overlay">
+  <div id="welcome-box">
+    <img id="welcome-img" src="images/welcome.png" alt="Welcome">
+
+    <!-- Step 1: password -->
+    <div id="password-panel">
+      <div id="welcome-heading" style="font-size:26px;font-weight:900;color:var(--text-bright);">Enter password</div>
+      <input type="password" id="pw-input" placeholder="Password..." autocomplete="off">
+      <div id="pw-error"></div>
+      <button id="pw-submit">Continue</button>
+    </div>
+
+    <!-- Step 2: name / returning user -->
+    <div id="name-panel" style="display:none; width:100%; flex-direction:column; align-items:center; gap:18px; text-align:center;">
+      <div id="name-heading" style="font-size:26px;font-weight:900;color:var(--text-bright);"></div>
+      <div id="name-sub" style="font-size:15px;color:var(--text-muted);margin-top:-8px;"></div>
+      <div id="name-form" style="display:none; width:100%; flex-direction:column; gap:12px;">
+        <input type="text" id="name-input" placeholder="Enter your name..." maxlength="40" autocomplete="off">
+        <button id="name-submit">Get started</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="loading"><div class="spinner"></div> Loading...</div>
+<div id="error" style="display:none;"></div>
+
+<header id="header" style="display:none;">
+  <img class="logo" src="images/favicon.png" alt="logo">
+  <div class="header-text">
+    <h1 id="hub-title"></h1>
+    <p id="hub-subtitle"></p>
+  </div>
+</header>
+
+<div class="modules" id="modules" style="display:none;"></div>
+
+<script>
+const THEME_KEY = 'trainingsim_theme';
+const USER_KEY  = 'trainingsim_username';
+
+// ── Theme ──────────────────────────────────────────────────────────────────
+
+function applyTheme(theme) {
+  document.body.classList.toggle('light', theme === 'light');
+  document.querySelectorAll('.theme-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.theme === theme)
+  );
+  localStorage.setItem(THEME_KEY, theme);
+}
+
+applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
+
+// ── Sidebar ────────────────────────────────────────────────────────────────
+
+(function initSidebar() {
+  const toggle   = document.getElementById('sidebar-toggle');
+  const sidebar  = document.getElementById('sidebar');
+  const overlay  = document.getElementById('sidebar-overlay');
+  const closeBtn = document.getElementById('sidebar-close');
+  const resetBtn = document.getElementById('reset-name-btn');
+  const userEl   = document.getElementById('sidebar-username');
+
+  const open  = () => { sidebar.classList.add('open');    overlay.classList.add('active'); };
+  const close = () => { sidebar.classList.remove('open'); overlay.classList.remove('active'); };
+
+  toggle.addEventListener('click', open);
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', close);
+
+  document.querySelectorAll('.theme-btn').forEach(btn =>
+    btn.addEventListener('click', () => applyTheme(btn.dataset.theme))
+  );
+
+  const username = localStorage.getItem(USER_KEY);
+  userEl.innerHTML = username
+    ? `${username}<small>Trainee</small>`
+    : `<small>Not set</small>`;
+
+  resetBtn.addEventListener('click', () => {
+    localStorage.removeItem(USER_KEY);
+    location.reload();
+  });
+})();
+
+// ── Bootstrap: load config then drive the whole auth + module flow ─────────
+
+const TAG_LABELS = {
+  live:     'Live',
+  vods:     'VODs',
+  cms:      'CMS',
+  airtable: 'Airtable',
+  ampp:     'AMPP',
+};
+
+async function bootstrap() {
+  let cfg = {};
+  try {
+    const res = await fetch('modules.json?_=' + Date.now());
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    cfg = await res.json();
+  } catch (e) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error').style.display = 'block';
+    document.getElementById('error').textContent = 'Could not load modules.json — ' + e.message;
+    return;
+  }
+
+  // ── Step 1: password ────────────────────────────────────────────────────
+  const pwPanel  = document.getElementById('password-panel');
+  const pwInput  = document.getElementById('pw-input');
+  const pwSubmit = document.getElementById('pw-submit');
+  const pwError  = document.getElementById('pw-error');
+  const correctPw = cfg.password || '';
+
+  setTimeout(() => pwInput.focus(), 80);
+
+  await new Promise(resolve => {
+    function checkPassword() {
+      if (pwInput.value === correctPw) {
+        pwError.textContent = '';
+        resolve();
+      } else {
+        pwError.textContent = 'Incorrect password.';
+        pwInput.classList.remove('error');
+        void pwInput.offsetWidth; // reflow to restart animation
+        pwInput.classList.add('error');
+        pwInput.value = '';
+        setTimeout(() => pwInput.focus(), 50);
+      }
+    }
+    pwSubmit.addEventListener('click', checkPassword);
+    pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') checkPassword(); });
+  });
+
+  // ── Step 2: name / welcome back ─────────────────────────────────────────
+  const overlay   = document.getElementById('welcome-overlay');
+  const namePanel = document.getElementById('name-panel');
+  const nameHeading = document.getElementById('name-heading');
+  const nameSub   = document.getElementById('name-sub');
+  const nameForm  = document.getElementById('name-form');
+  const nameInput = document.getElementById('name-input');
+  const nameSubmit = document.getElementById('name-submit');
+  const savedName = localStorage.getItem(USER_KEY);
+
+  pwPanel.style.display = 'none';
+  namePanel.style.display = 'flex';
+
+  function dismiss() {
+    overlay.classList.add('dismissing');
+    setTimeout(() => { overlay.style.display = 'none'; }, 460);
+  }
+
+  if (savedName) {
+    nameHeading.textContent = `Welcome back, ${savedName}`;
+    nameSub.textContent     = '';
+    nameForm.style.display  = 'none';
+    setTimeout(dismiss, 900);
+  } else {
+    nameHeading.textContent = 'Welcome';
+    nameSub.textContent     = "What's your name?";
+    nameForm.style.display  = 'flex';
+    setTimeout(() => nameInput.focus(), 50);
+
+    function save() {
+      const name = nameInput.value.trim();
+      if (!name) { nameInput.focus(); return; }
+      localStorage.setItem(USER_KEY, name);
+      const userEl = document.getElementById('sidebar-username');
+      if (userEl) userEl.innerHTML = `${name}<small>Trainee</small>`;
+      dismiss();
+    }
+    nameSubmit.addEventListener('click', save);
+    nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') save(); });
+  }
+
+  // ── Render modules ───────────────────────────────────────────────────────
+  document.getElementById('loading').style.display = 'none';
+  document.title = cfg.title || 'Training Hub';
+  document.getElementById('hub-title').textContent    = cfg.title    || 'Training Hub';
+  document.getElementById('hub-subtitle').textContent = cfg.subtitle || '';
+  document.getElementById('header').style.display = 'flex';
+
+  const grid = document.getElementById('modules');
+  (cfg.modules || []).forEach(mod => {
+    const tagKey   = (mod.tag || '').toLowerCase();
+    const tagLabel = TAG_LABELS[tagKey] || mod.tag || '';
+    const tagClass = tagKey ? `tag-${tagKey}` : '';
+
+    const card = document.createElement('a');
+    card.className = 'module-card';
+    card.href = mod.url;
+    card.innerHTML = `
+      ${tagLabel ? `<span class="module-tag ${tagClass}">${tagLabel}</span>` : ''}
+      <div class="module-name">${mod.name}</div>
+      <div class="module-desc">${mod.description}</div>
+      <div class="module-arrow">Open module &rarr;</div>
+    `;
+    grid.appendChild(card);
+  });
+  grid.style.display = 'grid';
+}
+
+bootstrap();
+</script>
+</body>
+</html>
