@@ -1,3 +1,3 @@
 # trainingsim
-![training pic](/training.png)
+![training pic](/images/training.png)
 simulator for training live ops
