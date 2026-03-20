@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Pipeline — Live Ops Training</title>
+<link rel="icon" type="image/png" href="../../images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #1a1d21;
+  --surface: #222529;
+  --surface2: #2a2d31;
+  --border: #383b42;
+  --text: #d1d2d3;
+  --text-muted: #8b9196;
+  --text-bright: #f2f3f5;
+  --hover-bg: rgba(255,255,255,0.04);
+  --accent: #9b59b6;
+}
+body.light {
+  --bg: #f0f2f5; --surface: #ffffff; --surface2: #e8eaed;
+  --border: #d0d3db; --text: #172b4d; --text-muted: #6b778c;
+  --text-bright: #091e42; --hover-bg: rgba(0,0,0,0.04);
+}
+
+body {
+  font-family: 'Lato', sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 0 0 80px;
+  transition: background 0.2s, color 0.2s;
+}
+
+/* ── Nav bar ── */
+.topbar {
+  width: 100%; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 24px; height: 52px;
+  position: sticky; top: 0; z-index: 100;
+}
+.topbar-back {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 700; color: var(--text-muted);
+  text-decoration: none; transition: color 0.12s;
+}
+.topbar-back:hover { color: var(--text-bright); }
+.topbar-title { font-size: 14px; font-weight: 900; color: var(--text-bright); }
+.topbar-sep { color: var(--border); font-size: 18px; }
+
+/* ── Topbar nav menu ── */
+.topbar { justify-content: space-between; }
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-menu-btn {
+  background: none; border: 1px solid var(--border);
+  border-radius: 7px; width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-muted); font-size: 16px;
+  transition: background 0.12s, color 0.12s; flex-shrink: 0;
+}
+.topbar-menu-btn:hover { background: var(--border); color: var(--text-bright); }
+#nav-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  display: none;
+}
+#nav-overlay.open { display: block; }
+#nav-dropdown {
+  position: fixed; top: 52px; right: 12px; z-index: 600;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; min-width: 200px; padding: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  display: none;
+  animation: navIn 0.15s ease;
+}
+#nav-overlay.open + #nav-dropdown { display: flex; flex-direction: column; gap: 2px; }
+@keyframes navIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 7px;
+  font-size: 14px; font-weight: 700; color: var(--text);
+  text-decoration: none; transition: background 0.1s;
+  cursor: pointer; border: none; background: none; width: 100%;
+  font-family: 'Lato', sans-serif; text-align: left;
+}
+.nav-item:hover { background: var(--hover-bg); color: var(--text-bright); }
+.nav-item svg { opacity: 0.65; flex-shrink: 0; }
+.nav-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+/* ── Hero ── */
+.hero {
+  width: 100%; max-width: 860px;
+  padding: 48px 24px 36px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.hero-tag {
+  display: inline-flex; align-self: flex-start;
+  font-size: 10px; font-weight: 900; letter-spacing: 0.08em;
+  text-transform: uppercase; border-radius: 4px; padding: 2px 8px;
+  background: #9b59b6; color: #fff; border: 1px solid #7d3c9e;
+}
+.hero h1 { font-size: 30px; font-weight: 900; color: var(--text-bright); }
+.hero p  { font-size: 15px; color: var(--text-muted); line-height: 1.7; max-width: 560px; }
+
+/* ── Pipeline animation wrapper ── */
+.pipeline-wrap {
+  width: 100%; max-width: 860px; padding: 0 24px;
+  display: flex; flex-direction: column; gap: 48px;
+}
+
+/* ── Horizontal pipeline ── */
+.pipeline-track {
+  position: relative;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 40px 32px 32px;
+  overflow: hidden;
+}
+.pipeline-track-title {
+  font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--text-muted); margin-bottom: 28px;
+}
+
+/* The stage nodes row */
+.stages-row {
+  display: flex; align-items: center; gap: 0;
+  position: relative; z-index: 2;
+}
+
+.stage-node {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  flex: 1; cursor: pointer;
+  transition: transform 0.15s;
+}
+.stage-node:hover { transform: translateY(-3px); }
+
+.stage-circle {
+  width: 64px; height: 64px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; border: 2px solid transparent;
+  position: relative; z-index: 2; transition: box-shadow 0.25s, border-color 0.25s;
+  flex-shrink: 0;
+}
+.stage-circle.active {
+  box-shadow: 0 0 0 4px rgba(255,255,255,0.08);
+}
+.stage-label {
+  font-size: 12px; font-weight: 900; color: var(--text-bright);
+  text-transform: uppercase; letter-spacing: 0.07em;
+}
+
+/* Connector lines between nodes */
+.connector {
+  flex: 1; height: 3px; position: relative; overflow: hidden;
+  border-radius: 2px; min-width: 20px; max-width: 80px;
+  flex-shrink: 1;
+}
+.connector-bg { width: 100%; height: 100%; background: var(--border); }
+
+/* The animated dot */
+@keyframes dot-travel {
+  0%   { left: -12px; opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { left: calc(100% + 4px); opacity: 0; }
+}
+.connector-dot {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 10px; height: 10px; border-radius: 50%;
+  animation: dot-travel 1.8s linear infinite;
+  box-shadow: 0 0 6px 2px currentColor;
+}
+
+/* ── Detail panel ── */
+.detail-panel {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px 22px;
+  display: flex; gap: 16px; align-items: flex-start;
+  transition: opacity 0.2s, transform 0.2s;
+  min-height: 90px;
+}
+.detail-icon { font-size: 28px; flex-shrink: 0; line-height: 1; margin-top: 2px; }
+.detail-text h3 { font-size: 15px; font-weight: 900; color: var(--text-bright); margin-bottom: 6px; }
+.detail-text p  { font-size: 13px; color: var(--text); line-height: 1.7; }
+
+/* ── Info cards ── */
+.cards-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px;
+}
+.info-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 8px;
+}
+.info-card-icon { font-size: 22px; }
+.info-card h3 { font-size: 14px; font-weight: 900; color: var(--text-bright); }
+.info-card p  { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+/* ── Pulse highlight for active node ── */
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(255,255,255,0.2); }
+  70%  { box-shadow: 0 0 0 8px rgba(255,255,255,0); }
+  100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+}
+.stage-circle.pulsing { animation: pulse-ring 1.5s ease-out infinite; }
+
+/* ── Nav buttons ── */
+.nav-row {
+  display: flex; gap: 12px; margin-top: 8px;
+}
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 22px; background: var(--accent); color: #fff;
+  border: none; border-radius: 8px; font-family: 'Lato', sans-serif;
+  font-size: 14px; font-weight: 900; cursor: pointer; text-decoration: none;
+  transition: background 0.12s;
+}
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 22px; background: transparent; color: var(--text);
+  border: 1px solid var(--border); border-radius: 8px; font-family: 'Lato', sans-serif;
+  font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none;
+  transition: background 0.12s, border-color 0.12s;
+}
+.btn-secondary:hover { background: var(--hover-bg); border-color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-left">
+    <a class="topbar-back" href="../../index.html">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Home
+    </a>
+    <span class="topbar-sep">·</span>
+    <span class="topbar-title">The Pipeline</span>
+  </div>
+  <button class="topbar-menu-btn" id="topbar-menu-btn" aria-label="Open menu">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</nav>
+<div id="nav-overlay"></div>
+<div id="nav-dropdown">
+  <a class="nav-item" href="../../index.html">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home
+  </a>
+  <a class="nav-item" href="../../roadmap.html">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="12" y1="7" x2="12" y2="12"/><line x1="12" y1="12" x2="5" y2="17"/><line x1="12" y1="12" x2="19" y2="17"/></svg>
+    Roadmap
+  </a>
+  <div class="nav-divider"></div>
+  <a class="nav-item" href="https://stanliveops.github.io/" target="_blank" rel="noopener">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    All Tools
+  </a>
+  <a class="nav-item" href="../../settings.html">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Settings
+  </a>
+</div>
+
+<div class="hero">
+  <span class="hero-tag">Pipeline</span>
+  <h1>From Source to Screen</h1>
+  <p>A live stream doesn't just appear on your TV. It travels through multiple stages before it reaches a viewer. Click each stage to learn what's happening — and where Live Ops fits in.</p>
+</div>
+
+<div class="pipeline-wrap" id="pipeline-wrap">
+
+  <div class="pipeline-track" id="pipeline-track">
+    <div class="pipeline-track-title">Live Stream Pipeline — click a stage to explore</div>
+    <div class="stages-row" id="stages-row"></div>
+    <div class="detail-panel" id="detail-panel" style="margin-top:28px;">
+      <div class="detail-icon" id="detail-icon">👆</div>
+      <div class="detail-text">
+        <h3 id="detail-title">Select a stage</h3>
+        <p id="detail-desc">Click on any stage above to learn what happens at that point in the pipeline.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info cards -->
+  <div class="cards-grid">
+    <div class="info-card">
+      <div class="info-card-icon">👁️</div>
+      <h3>Where does Live Ops monitor?</h3>
+      <p>Live Ops primarily watches the stream at the AMPP stage — bitrates, job health, and source stability. That's where most interventions happen.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon">🔁</div>
+      <h3>What is a backup source?</h3>
+      <p>If the primary source fails, a backup encoder (often at a different location) can be switched in to keep the stream alive with minimal viewer impact.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon">📉</div>
+      <h3>What causes bitrate drops?</h3>
+      <p>Network congestion, encoder issues, and hardware failures can all cause the bitrate to drop. A sustained drop usually means something is wrong upstream.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon">⚡</div>
+      <h3>How fast does Live Ops need to react?</h3>
+      <p>Most SLAs require acknowledgment within 1–2 minutes of an issue. Delays let problems propagate to viewers and are harder to recover from.</p>
+    </div>
+  </div>
+
+  <div>
+    <div class="nav-row">
+      <a class="btn-primary" href="../bitrate/bitrate.html">Practice Bitrates &rarr;</a>
+      <a class="btn-secondary" href="../../index.html">Back to hub</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Apply saved theme
+const theme = localStorage.getItem('trainingsim_theme') || 'dark';
+if (theme === 'light') document.body.classList.add('light');
+
+// Load config and build pipeline
+async function init() {
+  let cfg = {};
+  try {
+    const res = await fetch('config.json?_=' + Date.now());
+    cfg = await res.json();
+  } catch(e) { /* use defaults */ }
+
+  const stages = cfg.pipeline?.stages || [
+    { id:'source',   label:'Source',   icon:'📷', color:'#e03c3c', description:'The encoder sends a live feed from the venue.' },
+    { id:'ingest',   label:'Ingest',   icon:'📥', color:'#e07c3c', description:'The ingest point receives the feed.' },
+    { id:'ampp',     label:'AMPP',     icon:'⚙️', color:'#9b59b6', description:'AMPP processes and routes the stream.' },
+    { id:'packager', label:'Packager', icon:'📦', color:'#3c8ee0', description:'The packager segments into HLS/DASH chunks.' },
+    { id:'cdn',      label:'CDN',      icon:'🌐', color:'#2d8a4e', description:'The CDN distributes the stream globally.' },
+    { id:'viewer',   label:'Viewer',   icon:'📺', color:'#dea700', description:'The viewer plays the stream.' },
+  ];
+
+  const row          = document.getElementById('stages-row');
+  const detailIcon   = document.getElementById('detail-icon');
+  const detailTitle  = document.getElementById('detail-title');
+  const detailDesc   = document.getElementById('detail-desc');
+  const detailPanel  = document.getElementById('detail-panel');
+
+  let activeIndex = -1;
+
+  stages.forEach((stage, i) => {
+    // Stage node
+    const node = document.createElement('div');
+    node.className = 'stage-node';
+    node.dataset.index = i;
+
+    const circle = document.createElement('div');
+    circle.className = 'stage-circle';
+    circle.style.cssText = `background: ${stage.color}22; border-color: ${stage.color}88;`;
+    circle.textContent = stage.icon;
+
+    const label = document.createElement('div');
+    label.className = 'stage-label';
+    label.style.color = stage.color;
+    label.textContent = stage.label;
+
+    node.appendChild(circle);
+    node.appendChild(label);
+
+    node.addEventListener('click', () => {
+      // Clear previous active
+      row.querySelectorAll('.stage-circle').forEach(c => {
+        c.classList.remove('active', 'pulsing');
+      });
+      // Set new active
+      circle.classList.add('active', 'pulsing');
+      circle.style.borderColor = stage.color;
+      circle.style.boxShadow = `0 0 0 4px ${stage.color}33`;
+      activeIndex = i;
+
+      // Update detail panel
+      detailPanel.style.opacity = '0';
+      detailPanel.style.transform = 'translateY(6px)';
+      setTimeout(() => {
+        detailIcon.textContent  = stage.icon;
+        detailTitle.textContent = stage.label;
+        detailDesc.textContent  = stage.description;
+        detailPanel.style.opacity = '1';
+        detailPanel.style.transform = 'translateY(0)';
+        detailPanel.style.borderColor = stage.color + '66';
+      }, 120);
+    });
+
+    row.appendChild(node);
+
+    // Connector (not after last stage)
+    if (i < stages.length - 1) {
+      const conn = document.createElement('div');
+      conn.className = 'connector';
+
+      const bg = document.createElement('div');
+      bg.className = 'connector-bg';
+
+      const dot = document.createElement('div');
+      dot.className = 'connector-dot';
+      dot.style.color = stage.color;
+      dot.style.background = stage.color;
+      // Stagger animation for each connector
+      dot.style.animationDelay = `${i * 0.3}s`;
+
+      conn.appendChild(bg);
+      conn.appendChild(dot);
+      row.appendChild(conn);
+    }
+  });
+}
+
+init();
+
+// ── Topbar nav menu ──
+(function() {
+  const btn      = document.getElementById('topbar-menu-btn');
+  const overlay  = document.getElementById('nav-overlay');
+  if (!btn || !overlay) return;
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    overlay.classList.toggle('open');
+  });
+  overlay.addEventListener('click', () => overlay.classList.remove('open'));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.classList.remove('open'); });
+})();
+</script>
+</body>
+</html>

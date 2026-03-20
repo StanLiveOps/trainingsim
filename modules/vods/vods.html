@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VODs Basics — Live Ops Training</title>
+<link rel="icon" type="image/png" href="../../images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #1a1d21; --surface: #222529; --surface2: #2a2d31;
+  --border: #383b42; --text: #d1d2d3; --text-muted: #8b9196;
+  --text-bright: #f2f3f5; --hover-bg: rgba(255,255,255,0.04);
+  --accent: #2d8a4e;
+}
+body.light {
+  --bg: #f0f2f5; --surface: #ffffff; --surface2: #e8eaed;
+  --border: #d0d3db; --text: #172b4d; --text-muted: #6b778c;
+  --text-bright: #091e42; --hover-bg: rgba(0,0,0,0.04);
+}
+
+body {
+  font-family: 'Lato', sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 0 0 80px;
+}
+
+.topbar {
+  width: 100%; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 24px; height: 52px;
+  position: sticky; top: 0; z-index: 100;
+}
+.topbar-back {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 700; color: var(--text-muted);
+  text-decoration: none; transition: color 0.12s;
+}
+.topbar-back:hover { color: var(--text-bright); }
+.topbar-title { font-size: 14px; font-weight: 900; color: var(--text-bright); }
+.topbar-sep { color: var(--border); font-size: 18px; }
+
+/* ── Topbar nav menu ── */
+.topbar { justify-content: space-between; }
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-menu-btn {
+  background: none; border: 1px solid var(--border);
+  border-radius: 7px; width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-muted); font-size: 16px;
+  transition: background 0.12s, color 0.12s; flex-shrink: 0;
+}
+.topbar-menu-btn:hover { background: var(--border); color: var(--text-bright); }
+#nav-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  display: none;
+}
+#nav-overlay.open { display: block; }
+#nav-dropdown {
+  position: fixed; top: 52px; right: 12px; z-index: 600;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; min-width: 200px; padding: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  display: none;
+  animation: navIn 0.15s ease;
+}
+#nav-overlay.open + #nav-dropdown { display: flex; flex-direction: column; gap: 2px; }
+@keyframes navIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 7px;
+  font-size: 14px; font-weight: 700; color: var(--text);
+  text-decoration: none; transition: background 0.1s;
+  cursor: pointer; border: none; background: none; width: 100%;
+  font-family: 'Lato', sans-serif; text-align: left;
+}
+.nav-item:hover { background: var(--hover-bg); color: var(--text-bright); }
+.nav-item svg { opacity: 0.65; flex-shrink: 0; }
+.nav-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+.hero {
+  width: 100%; max-width: 760px; padding: 60px 24px 40px;
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; gap: 16px;
+}
+.hero-tag {
+  display: inline-flex; align-self: center;
+  font-size: 10px; font-weight: 900; letter-spacing: 0.08em;
+  text-transform: uppercase; border-radius: 4px; padding: 2px 8px;
+  background: #2d8a4e; color: #fff; border: 1px solid #1f6337;
+}
+.coming-soon-icon {
+  font-size: 72px; line-height: 1;
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}
+.hero h1 { font-size: 28px; font-weight: 900; color: var(--text-bright); }
+.hero p  { font-size: 15px; color: var(--text-muted); line-height: 1.7; max-width: 480px; }
+
+.topics-grid {
+  width: 100%; max-width: 760px; padding: 0 24px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.topic-card {
+  background: var(--surface); border: 1px dashed var(--border);
+  border-radius: 12px; padding: 18px; opacity: 0.55;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.topic-icon { font-size: 22px; }
+.topic-title { font-size: 14px; font-weight: 900; color: var(--text-bright); }
+.topic-desc  { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+.back-row {
+  width: 100%; max-width: 760px; padding: 32px 24px 0;
+  display: flex;
+}
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 22px; background: transparent; color: var(--text);
+  border: 1px solid var(--border); border-radius: 8px; font-family: 'Lato', sans-serif;
+  font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none;
+  transition: background 0.12s, border-color 0.12s;
+}
+.btn-secondary:hover { background: var(--hover-bg); border-color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-left">
+    <a class="topbar-back" href="../../index.html">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Home
+    </a>
+    <span class="topbar-sep">·</span>
+    <span class="topbar-title">VODs Basics</span>
+  </div>
+  <button class="topbar-menu-btn" id="topbar-menu-btn" aria-label="Open menu">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</nav>
+<div id="nav-overlay"></div>
+<div id="nav-dropdown">
+  <a class="nav-item" href="../../index.html">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home
+  </a>
+  <a class="nav-item" href="../../roadmap.html">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="12" y1="7" x2="12" y2="12"/><line x1="12" y1="12" x2="5" y2="17"/><line x1="12" y1="12" x2="19" y2="17"/></svg>
+    Roadmap
+  </a>
+  <div class="nav-divider"></div>
+  <a class="nav-item" href="https://stanliveops.github.io/" target="_blank" rel="noopener">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    All Tools
+  </a>
+  <a class="nav-item" href="../../settings.html">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Settings
+  </a>
+</div>
+
+<div class="hero">
+  <span class="hero-tag">VODs</span>
+  <div class="coming-soon-icon">🚧</div>
+  <h1>Coming Soon</h1>
+  <p>VODs Basics is currently being built. When it's ready, you'll learn VOD transcoding workflows, common failure modes, and how to handle stalled or failed jobs.</p>
+</div>
+
+<div class="topics-grid">
+  <div class="topic-card">
+    <div class="topic-icon">🎬</div>
+    <div class="topic-title">What is a VOD?</div>
+    <div class="topic-desc">Video on Demand vs. live — how they differ and why that matters for Live Ops.</div>
+  </div>
+  <div class="topic-card">
+    <div class="topic-icon">⚙️</div>
+    <div class="topic-title">Transcoding Jobs</div>
+    <div class="topic-desc">How a raw video file gets converted into multiple formats for different devices and connections.</div>
+  </div>
+  <div class="topic-card">
+    <div class="topic-icon">🔍</div>
+    <div class="topic-title">Job Monitoring</div>
+    <div class="topic-desc">How to spot stuck, failed, or slow jobs and what to do about them.</div>
+  </div>
+  <div class="topic-card">
+    <div class="topic-icon">🔁</div>
+    <div class="topic-title">Retries & Escalation</div>
+    <div class="topic-desc">When to retry a failed job automatically vs. when to escalate to engineering.</div>
+  </div>
+</div>
+
+<div class="back-row">
+  <a class="btn-secondary" href="../../index.html">&larr; Back to hub</a>
+</div>
+
+<script>
+  const theme = localStorage.getItem('trainingsim_theme') || 'dark';
+  if (theme === 'light') document.body.classList.add('light');
+
+  // ── Topbar nav menu ──
+  (function() {
+    const btn      = document.getElementById('topbar-menu-btn');
+    const overlay  = document.getElementById('nav-overlay');
+    if (!btn || !overlay) return;
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      overlay.classList.toggle('open');
+    });
+    overlay.addEventListener('click', () => overlay.classList.remove('open'));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.classList.remove('open'); });
+  })();
+</script>
+</body>
+</html>

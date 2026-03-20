@@ -1,0 +1,99 @@
+{
+  "title": "Live Ops Roadmap",
+  "subtitle": "Your path from beginner to confident Live Ops operator",
+  "layout": {
+    "nodeWidth": 200,
+    "nodeHeight": 64,
+    "colGap": 260,
+    "rowGap": 110
+  },
+  "nodes": [
+    {
+      "id": "intro",
+      "label": "Introduction",
+      "sub": "Start here",
+      "url": "modules/introduction/introduction.html",
+      "color": "#5865f2",
+      "row": 0,
+      "col": 1,
+      "locked": false,
+      "done": false
+    },
+    {
+      "id": "pipeline",
+      "label": "The Pipeline",
+      "sub": "How streams flow",
+      "url": "modules/pipeline/pipeline.html",
+      "color": "#9b59b6",
+      "row": 1,
+      "col": 0,
+      "locked": false,
+      "done": false
+    },
+    {
+      "id": "bitrate",
+      "label": "Bitrates",
+      "sub": "Monitor & respond",
+      "url": "modules/bitrate/bitrate.html",
+      "color": "#e03c3c",
+      "row": 1,
+      "col": 2,
+      "locked": false,
+      "done": false
+    },
+    {
+      "id": "backup",
+      "label": "Backup Sources",
+      "sub": "Failover procedures",
+      "url": null,
+      "color": "#e07c3c",
+      "row": 2,
+      "col": 0,
+      "locked": true,
+      "done": false
+    },
+    {
+      "id": "slack-comms",
+      "label": "Slack Comms",
+      "sub": "Communication protocols",
+      "url": null,
+      "color": "#3c8ee0",
+      "row": 2,
+      "col": 1,
+      "locked": true,
+      "done": false
+    },
+    {
+      "id": "incident",
+      "label": "Incident Handling",
+      "sub": "Log & escalate",
+      "url": null,
+      "color": "#e0b43c",
+      "row": 2,
+      "col": 2,
+      "locked": true,
+      "done": false
+    },
+    {
+      "id": "vods",
+      "label": "VODs Basics",
+      "sub": "On-demand workflows",
+      "url": "modules/vods/vods.html",
+      "color": "#2d8a4e",
+      "row": 3,
+      "col": 1,
+      "locked": true,
+      "done": false
+    }
+  ],
+  "edges": [
+    ["intro", "pipeline"],
+    ["intro", "bitrate"],
+    ["pipeline", "backup"],
+    ["pipeline", "slack-comms"],
+    ["bitrate", "slack-comms"],
+    ["bitrate", "incident"],
+    ["slack-comms", "vods"],
+    ["incident", "vods"]
+  ]
+}

@@ -2,16 +2,58 @@
   "password": "liveops123",
   "title": "Live Ops",
   "subtitle": "Select a training module to begin",
+  "tags": {
+    "introduction": {
+      "label": "Introduction",
+      "color": "#ffffff",
+      "bg": "#5865f2",
+      "border": "#4752c4"
+    },
+    "live": {
+      "label": "Live",
+      "color": "#ffffff",
+      "bg": "#e03c3c",
+      "border": "#b52d2d"
+    },
+    "vods": {
+      "label": "VODs",
+      "color": "#ffffff",
+      "bg": "#2d8a4e",
+      "border": "#1f6337"
+    },
+    "pipeline": {
+      "label": "Pipeline",
+      "color": "#ffffff",
+      "bg": "#9b59b6",
+      "border": "#7d3c9e"
+    }
+  },
   "categories": [
     {
       "id": "shells",
       "label": "Shells",
+      "color": "#5865f2",
       "modules": []
     },
     {
-      "id": "live-intro",
-      "label": "Live Intro",
+      "id": "live",
+      "label": "Live",
+      "color": "#e03c3c",
       "modules": [
+        {
+          "id": "introduction",
+          "name": "Introduction",
+          "description": "Get oriented with Live Ops — what it is, what you'll be doing, and how the training works.",
+          "url": "modules/introduction/introduction.html",
+          "tag": "introduction"
+        },
+        {
+          "id": "pipeline",
+          "name": "The Pipeline",
+          "description": "Explore the live streaming pipeline from source ingest to viewer delivery with interactive animations.",
+          "url": "modules/pipeline/pipeline.html",
+          "tag": "pipeline"
+        },
         {
           "id": "bitrate",
           "name": "Bitrates",
@@ -24,7 +66,16 @@
     {
       "id": "vods",
       "label": "VODs",
-      "modules": []
+      "color": "#2d8a4e",
+      "modules": [
+        {
+          "id": "vods-basics",
+          "name": "VODs Basics",
+          "description": "An introduction to VOD workflows, transcoding jobs, and common issues. Coming soon.",
+          "url": "modules/vods/vods.html",
+          "tag": "vods"
+        }
+      ]
     }
   ]
 }

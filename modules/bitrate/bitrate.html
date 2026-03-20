@@ -34,7 +34,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 32px 24px 80px;
+  padding: 0 0 80px;
 }
 
 /* ── Training bar ── */
@@ -273,16 +273,32 @@ body.light {
 body.light #training-bar { background: #e8eaf0; }
 body.light .app-card { background: rgba(124,92,191,0.06); }
 
-/* ── Sidebar toggle ── */
-#sidebar-toggle {
-  position: fixed; top: 14px; left: 14px; z-index: 200;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 8px; width: 36px; height: 36px;
-  font-size: 18px; cursor: pointer; color: var(--text);
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.12s; line-height: 1;
+/* ── Topbar ── */
+#topbar {
+  width: 100%; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px; height: 52px;
+  position: sticky; top: 0; z-index: 200; flex-shrink: 0;
 }
-#sidebar-toggle:hover { background: var(--border); }
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-back {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 700; color: var(--text-muted);
+  text-decoration: none; transition: color 0.12s;
+}
+.topbar-back:hover { color: var(--text-bright); }
+.topbar-title { font-size: 14px; font-weight: 900; color: var(--text-bright); }
+.topbar-sep { color: var(--border); font-size: 18px; }
+/* ── Sidebar toggle (now topbar menu button) ── */
+#sidebar-toggle {
+  background: none; border: 1px solid var(--border);
+  border-radius: 7px; width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-muted); font-size: 16px;
+  transition: background 0.12s, color 0.12s; flex-shrink: 0;
+}
+#sidebar-toggle:hover { background: var(--border); color: var(--text-bright); }
 
 /* ── Sidebar overlay ── */
 #sidebar-overlay {
@@ -432,8 +448,22 @@ body.light .app-card { background: rgba(124,92,191,0.06); }
   </div>
 </div>
 
+<!-- Topbar -->
+<div id="topbar">
+  <div class="topbar-left">
+    <a class="topbar-back" href="../../index.html">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Home
+    </a>
+    <span class="topbar-sep">·</span>
+    <span class="topbar-title">Bitrates</span>
+  </div>
+  <button id="sidebar-toggle" aria-label="Open menu">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</div>
+
 <!-- Sidebar -->
-<button id="sidebar-toggle">&#9776;</button>
 <div id="sidebar-overlay"></div>
 <div id="sidebar">
   <div class="sidebar-header">
@@ -441,8 +471,22 @@ body.light .app-card { background: rgba(124,92,191,0.06); }
     <button id="sidebar-close">&times;</button>
   </div>
   <nav class="sidebar-nav">
-    <a href="../../index.html" class="sidebar-link">&#8592; Home</a>
-    <a href="../../settings.html" class="sidebar-link">&#9881; Settings</a>
+    <a href="../../index.html" class="sidebar-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </a>
+    <a href="../../roadmap.html" class="sidebar-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="12" y1="7" x2="12" y2="12"/><line x1="12" y1="12" x2="5" y2="17"/><line x1="12" y1="12" x2="19" y2="17"/></svg>
+      Roadmap
+    </a>
+    <a href="https://stanliveops.github.io/" class="sidebar-link" target="_blank" rel="noopener">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      All Tools
+    </a>
+    <a href="../../settings.html" class="sidebar-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </a>
   </nav>
   <div class="sidebar-section">
     <div class="sidebar-label">Theme</div>
@@ -460,7 +504,7 @@ body.light .app-card { background: rgba(124,92,191,0.06); }
 
 <div id="loading"><div class="spinner"></div> Loading...</div>
 <div id="error" style="display:none;"></div>
-<div id="app" style="display:none; width:100%; flex-direction:column; align-items:center;">
+<div id="app" style="display:none; width:100%; flex-direction:column; align-items:center; padding-top:28px;">
 
   <!-- Training bar — populated from config.json -->
   <div id="training-bar">
@@ -875,18 +919,18 @@ async function init() {
   buildSim();
 
   // Show the normal-bitrate preview overlay before the trainee sees any scenario
-  showPreview(CFG.source?.name || 'source');
+  showPreview(CFG.source?.name || 'source', CFG.training?.preview?.duration ?? 15);
 }
 
-// ── 15-second normal-bitrate preview ─────────────────────────────────────────
-function showPreview(sourceName) {
+// ── Normal-bitrate preview ────────────────────────────────────────────────────
+function showPreview(sourceName, duration) {
   const overlay   = document.getElementById('preview-overlay');
   const timerBar  = document.getElementById('preview-timer-bar');
   const timerLbl  = document.getElementById('preview-timer-label');
   const skipBtn   = document.getElementById('preview-skip');
   const subEl     = document.getElementById('preview-chart-sub');
   const canvas    = document.getElementById('preview-canvas');
-  const DURATION  = 15; // seconds
+  const DURATION  = duration;
 
   // Build a normal-scenario chart into the preview canvas
   const COUNT  = 60;

@@ -1,0 +1,52 @@
+{
+  "module": {
+    "title": "The Pipeline",
+    "subtitle": "From source to screen"
+  },
+  "pipeline": {
+    "stages": [
+      {
+        "id": "source",
+        "label": "Source",
+        "icon": "📷",
+        "color": "#e03c3c",
+        "description": "The encoder at the venue sends a live RTMP or SRT feed — this is where the stream begins."
+      },
+      {
+        "id": "ingest",
+        "label": "Ingest",
+        "icon": "📥",
+        "color": "#e07c3c",
+        "description": "The ingest point receives the feed and hands it off to the processing platform (AMPP)."
+      },
+      {
+        "id": "ampp",
+        "label": "AMPP",
+        "icon": "⚙️",
+        "color": "#9b59b6",
+        "description": "AMPP processes, transcodes, and routes the stream. This is where Live Ops monitors bitrate and stream health."
+      },
+      {
+        "id": "packager",
+        "label": "Packager",
+        "icon": "📦",
+        "color": "#3c8ee0",
+        "description": "The packager segments the stream into HLS or DASH chunks for adaptive bitrate delivery."
+      },
+      {
+        "id": "cdn",
+        "label": "CDN",
+        "icon": "🌐",
+        "color": "#2d8a4e",
+        "description": "The CDN (Content Delivery Network) distributes the stream globally, getting it close to viewers."
+      },
+      {
+        "id": "viewer",
+        "label": "Viewer",
+        "icon": "📺",
+        "color": "#dea700",
+        "description": "The viewer's player requests and plays back the stream, adapting quality based on their connection."
+      }
+    ]
+  }
+}

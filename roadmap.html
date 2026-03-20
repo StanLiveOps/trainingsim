@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roadmap — Live Ops Training</title>
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #1a1d21;
+  --surface: #222529;
+  --surface2: #2a2d31;
+  --border: #383b42;
+  --text: #d1d2d3;
+  --text-muted: #8b9196;
+  --text-bright: #f2f3f5;
+  --hover-bg: rgba(255,255,255,0.04);
+  --accent: #7c5cbf;
+}
+body.light {
+  --bg: #f0f2f5; --surface: #ffffff; --surface2: #e8eaed;
+  --border: #d0d3db; --text: #172b4d; --text-muted: #6b778c;
+  --text-bright: #091e42; --hover-bg: rgba(0,0,0,0.04);
+}
+
+body {
+  font-family: 'Lato', sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  padding-bottom: 80px;
+  transition: background 0.2s, color 0.2s;
+}
+
+/* ── Nav bar ── */
+.topbar {
+  width: 100%; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 24px; height: 52px;
+  position: sticky; top: 0; z-index: 100;
+}
+.topbar-back {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 700; color: var(--text-muted);
+  text-decoration: none; transition: color 0.12s;
+}
+.topbar-back:hover { color: var(--text-bright); }
+.topbar-title { font-size: 14px; font-weight: 900; color: var(--text-bright); }
+.topbar-sep { color: var(--border); font-size: 18px; }
+
+/* ── Topbar nav menu ── */
+.topbar { justify-content: space-between; }
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-menu-btn {
+  background: none; border: 1px solid var(--border);
+  border-radius: 7px; width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-muted); font-size: 16px;
+  transition: background 0.12s, color 0.12s; flex-shrink: 0;
+}
+.topbar-menu-btn:hover { background: var(--border); color: var(--text-bright); }
+#nav-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  display: none;
+}
+#nav-overlay.open { display: block; }
+#nav-dropdown {
+  position: fixed; top: 52px; right: 12px; z-index: 600;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; min-width: 200px; padding: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  display: none;
+  animation: navIn 0.15s ease;
+}
+#nav-overlay.open + #nav-dropdown { display: flex; flex-direction: column; gap: 2px; }
+@keyframes navIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 7px;
+  font-size: 14px; font-weight: 700; color: var(--text);
+  text-decoration: none; transition: background 0.1s;
+  cursor: pointer; border: none; background: none; width: 100%;
+  font-family: 'Lato', sans-serif; text-align: left;
+}
+.nav-item:hover { background: var(--hover-bg); color: var(--text-bright); }
+.nav-item svg { opacity: 0.65; flex-shrink: 0; }
+.nav-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+/* ── Hero ── */
+.hero {
+  width: 100%; max-width: 900px; padding: 48px 24px 32px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.hero h1 { font-size: 28px; font-weight: 900; color: var(--text-bright); }
+.hero p  { font-size: 14px; color: var(--text-muted); line-height: 1.7; max-width: 520px; }
+
+/* ── Roadmap container ── */
+#roadmap-wrap {
+  width: 100%; max-width: 900px; padding: 0 24px;
+  position: relative;
+}
+
+/* The SVG layer for bezier lines */
+#roadmap-svg {
+  position: absolute;
+  top: 0; left: 24px;    /* match padding */
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* The node layer */
+#roadmap-nodes {
+  position: relative;
+}
+
+/* Each node card */
+.roadmap-node {
+  position: absolute;
+  display: flex; flex-direction: column; gap: 4px;
+  background: var(--surface); border: 2px solid transparent;
+  border-radius: 12px; padding: 14px 18px;
+  text-decoration: none; color: inherit;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  overflow: hidden;
+}
+.roadmap-node:not(.locked):hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.roadmap-node.locked {
+  opacity: 0.45; cursor: default;
+}
+.roadmap-node::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px; border-radius: 12px 12px 0 0;
+  background: currentColor;
+}
+
+.node-label { font-size: 14px; font-weight: 900; color: var(--text-bright); }
+.node-sub   { font-size: 11px; color: var(--text-muted); }
+.node-lock  { position: absolute; top: 10px; right: 12px; font-size: 12px; opacity: 0.6; }
+
+/* Legend */
+.legend {
+  width: 100%; max-width: 900px; padding: 32px 24px 0;
+  display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
+}
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); }
+.legend-dot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* Loading */
+#loading { color: var(--text-muted); font-size: 14px; padding: 40px 0; }
+</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-left">
+    <a class="topbar-back" href="index.html">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Home
+    </a>
+    <span class="topbar-sep">·</span>
+    <span class="topbar-title">Roadmap</span>
+  </div>
+  <button class="topbar-menu-btn" id="topbar-menu-btn" aria-label="Open menu">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</nav>
+<div id="nav-overlay"></div>
+<div id="nav-dropdown">
+  <a class="nav-item" href="index.html">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home
+  </a>
+  <a class="nav-item" href="roadmap.html">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="12" y1="7" x2="12" y2="12"/><line x1="12" y1="12" x2="5" y2="17"/><line x1="12" y1="12" x2="19" y2="17"/></svg>
+    Roadmap
+  </a>
+  <div class="nav-divider"></div>
+  <a class="nav-item" href="https://stanliveops.github.io/" target="_blank" rel="noopener">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    All Tools
+  </a>
+  <a class="nav-item" href="settings.html">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Settings
+  </a>
+</div>
+
+<div class="hero">
+  <h1 id="roadmap-title">Roadmap</h1>
+  <p id="roadmap-subtitle"></p>
+</div>
+
+<div id="roadmap-wrap">
+  <div id="loading">Loading roadmap...</div>
+  <svg id="roadmap-svg" id="roadmap-svg"></svg>
+  <div id="roadmap-nodes"></div>
+</div>
+
+<div class="legend">
+  <span style="font-size:12px;font-weight:900;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;">Legend</span>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#5865f2;"></div>
+    Available
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:var(--border);opacity:0.6;"></div>
+    🔒 Locked — complete earlier modules
+  </div>
+</div>
+
+<script>
+// Apply saved theme
+const theme = localStorage.getItem('trainingsim_theme') || 'dark';
+if (theme === 'light') document.body.classList.add('light');
+
+async function buildRoadmap() {
+  let data = {};
+  try {
+    const res = await fetch('roadmap.json?_=' + Date.now());
+    data = await res.json();
+  } catch(e) {
+    document.getElementById('loading').textContent = 'Could not load roadmap.json — ' + e.message;
+    return;
+  }
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('roadmap-title').textContent = data.title || 'Roadmap';
+  document.getElementById('roadmap-subtitle').textContent = data.subtitle || '';
+
+  const layout = data.layout || { nodeWidth: 200, nodeHeight: 64, colGap: 260, rowGap: 110 };
+  const { nodeWidth, nodeHeight, colGap, rowGap } = layout;
+
+  const nodes   = data.nodes || [];
+  const edges   = data.edges || [];
+
+  // Build lookup
+  const nodeMap = {};
+  nodes.forEach(n => { nodeMap[n.id] = n; });
+
+  // Determine grid dimensions
+  const maxCol = Math.max(...nodes.map(n => n.col));
+  const maxRow = Math.max(...nodes.map(n => n.row));
+
+  const totalW = (maxCol + 1) * colGap;
+  const totalH = (maxRow + 1) * rowGap + nodeHeight + 20;
+
+  const svg       = document.getElementById('roadmap-svg');
+  const nodesDiv  = document.getElementById('roadmap-nodes');
+  const wrap      = document.getElementById('roadmap-wrap');
+
+  nodesDiv.style.height = totalH + 'px';
+  svg.setAttribute('width',  totalW);
+  svg.setAttribute('height', totalH);
+
+  // Node center position calculator
+  function nodePos(n) {
+    const x = n.col * colGap + colGap / 2 - nodeWidth / 2;
+    const y = n.row * rowGap;
+    const cx = x + nodeWidth / 2;
+    const cy = y + nodeHeight / 2;
+    return { x, y, cx, cy };
+  }
+
+  // Draw bezier edges
+  edges.forEach(([fromId, toId]) => {
+    const from = nodeMap[fromId];
+    const to   = nodeMap[toId];
+    if (!from || !to) return;
+
+    const fp = nodePos(from);
+    const tp = nodePos(to);
+
+    // Start from bottom-center of from, end at top-center of to
+    const x1 = fp.cx, y1 = fp.y + nodeHeight;
+    const x2 = tp.cx, y2 = tp.y;
+
+    const cpOffset = Math.abs(y2 - y1) * 0.5;
+    const d = `M ${x1} ${y1} C ${x1} ${y1 + cpOffset}, ${x2} ${y2 - cpOffset}, ${x2} ${y2}`;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', from.color || '#555');
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('opacity', from.locked || to.locked ? '0.2' : '0.45');
+    path.setAttribute('stroke-dasharray', to.locked ? '5 4' : 'none');
+    svg.appendChild(path);
+  });
+
+  // Render nodes
+  nodes.forEach(n => {
+    const pos = nodePos(n);
+    const el  = n.url && !n.locked ? document.createElement('a') : document.createElement('div');
+
+    el.className = 'roadmap-node' + (n.locked ? ' locked' : '');
+    if (n.url && !n.locked) {
+      el.href = n.url;
+    }
+
+    el.style.cssText = `
+      left: ${pos.x}px;
+      top:  ${pos.y}px;
+      width: ${nodeWidth}px;
+      min-height: ${nodeHeight}px;
+      color: ${n.color};
+      border-color: ${n.color}44;
+    `;
+
+    // Color top bar via ::before pseudo via a real element (border-top)
+    el.style.borderTop = `3px solid ${n.color}`;
+
+    el.innerHTML = `
+      ${n.locked ? '<span class="node-lock">🔒</span>' : ''}
+      <div class="node-label">${n.label}</div>
+      ${n.sub ? `<div class="node-sub">${n.sub}</div>` : ''}
+    `;
+
+    nodesDiv.appendChild(el);
+  });
+}
+
+buildRoadmap();
+
+// ── Topbar nav menu ──
+(function() {
+  const btn      = document.getElementById('topbar-menu-btn');
+  const overlay  = document.getElementById('nav-overlay');
+  if (!btn || !overlay) return;
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    overlay.classList.toggle('open');
+  });
+  overlay.addEventListener('click', () => overlay.classList.remove('open'));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.classList.remove('open'); });
+})();
+</script>
+</body>
+</html>

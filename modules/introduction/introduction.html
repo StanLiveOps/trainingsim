@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Introduction — Live Ops Training</title>
+<link rel="icon" type="image/png" href="../../images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #1a1d21;
+  --surface: #222529;
+  --surface2: #2a2d31;
+  --border: #383b42;
+  --text: #d1d2d3;
+  --text-muted: #8b9196;
+  --text-bright: #f2f3f5;
+  --hover-bg: rgba(255,255,255,0.04);
+  --accent: #5865f2;
+  --accent-hover: #4752c4;
+}
+body.light {
+  --bg: #f0f2f5; --surface: #ffffff; --surface2: #e8eaed;
+  --border: #d0d3db; --text: #172b4d; --text-muted: #6b778c;
+  --text-bright: #091e42; --hover-bg: rgba(0,0,0,0.04);
+}
+
+body {
+  font-family: 'Lato', sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 0 0 80px;
+  transition: background 0.2s, color 0.2s;
+}
+
+/* ── Nav bar ── */
+.topbar {
+  width: 100%; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 24px; height: 52px;
+  position: sticky; top: 0; z-index: 100;
+}
+.topbar-back {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 700; color: var(--text-muted);
+  text-decoration: none; transition: color 0.12s; white-space: nowrap;
+}
+.topbar-back:hover { color: var(--text-bright); }
+.topbar-title {
+  font-size: 14px; font-weight: 900; color: var(--text-bright);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.topbar-sep { color: var(--border); font-size: 18px; }
+
+/* ── Topbar nav menu ── */
+.topbar { justify-content: space-between; }
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-menu-btn {
+  background: none; border: 1px solid var(--border);
+  border-radius: 7px; width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-muted); font-size: 16px;
+  transition: background 0.12s, color 0.12s; flex-shrink: 0;
+}
+.topbar-menu-btn:hover { background: var(--border); color: var(--text-bright); }
+#nav-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  display: none;
+}
+#nav-overlay.open { display: block; }
+#nav-dropdown {
+  position: fixed; top: 52px; right: 12px; z-index: 600;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; min-width: 200px; padding: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  display: none;
+  animation: navIn 0.15s ease;
+}
+#nav-overlay.open + #nav-dropdown { display: flex; flex-direction: column; gap: 2px; }
+@keyframes navIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 7px;
+  font-size: 14px; font-weight: 700; color: var(--text);
+  text-decoration: none; transition: background 0.1s;
+  cursor: pointer; border: none; background: none; width: 100%;
+  font-family: 'Lato', sans-serif; text-align: left;
+}
+.nav-item:hover { background: var(--hover-bg); color: var(--text-bright); }
+.nav-item svg { opacity: 0.65; flex-shrink: 0; }
+.nav-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+/* ── Hero ── */
+.hero {
+  width: 100%; max-width: 760px;
+  padding: 52px 24px 40px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.hero-tag {
+  display: inline-flex; align-self: flex-start;
+  font-size: 10px; font-weight: 900; letter-spacing: 0.08em;
+  text-transform: uppercase; border-radius: 4px; padding: 2px 8px;
+  background: #5865f2; color: #fff; border: 1px solid #4752c4;
+}
+.hero h1 {
+  font-size: 30px; font-weight: 900; color: var(--text-bright); line-height: 1.2;
+}
+.hero p {
+  font-size: 15px; color: var(--text-muted); line-height: 1.7; max-width: 560px;
+}
+
+/* ── Content ── */
+.content { width: 100%; max-width: 760px; padding: 0 24px; display: flex; flex-direction: column; gap: 32px; }
+
+.section-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 28px 28px 24px; display: flex; flex-direction: column; gap: 16px;
+}
+.section-icon {
+  font-size: 28px; line-height: 1;
+}
+.section-card h2 {
+  font-size: 17px; font-weight: 900; color: var(--text-bright);
+}
+.section-card p, .section-card li {
+  font-size: 14px; color: var(--text); line-height: 1.75;
+}
+.section-card ul {
+  list-style: none; display: flex; flex-direction: column; gap: 8px; padding: 0;
+}
+.section-card li {
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.li-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); flex-shrink: 0; margin-top: 7px;
+}
+
+/* ── Role cards ── */
+.role-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+.role-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 6px;
+}
+.role-card-label { font-size: 12px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; }
+.role-card-title { font-size: 15px; font-weight: 900; color: var(--text-bright); }
+.role-card-desc  { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+/* ── Module grid ── */
+.module-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;
+}
+.module-item {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px; text-decoration: none; color: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+.module-item:hover { border-color: var(--accent); background: var(--surface); }
+.module-item-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(88,101,242,0.15); border: 1px solid rgba(88,101,242,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 900; color: var(--accent); flex-shrink: 0;
+}
+.module-item-name { font-size: 13px; font-weight: 700; color: var(--text-bright); }
+
+/* ── Start CTA ── */
+.cta-row {
+  display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+}
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 22px; background: var(--accent); color: #fff;
+  border: none; border-radius: 8px; font-family: 'Lato', sans-serif;
+  font-size: 14px; font-weight: 900; cursor: pointer; text-decoration: none;
+  transition: background 0.12s;
+}
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 22px; background: transparent; color: var(--text);
+  border: 1px solid var(--border); border-radius: 8px; font-family: 'Lato', sans-serif;
+  font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none;
+  transition: background 0.12s, border-color 0.12s;
+}
+.btn-secondary:hover { background: var(--hover-bg); border-color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-left">
+    <a class="topbar-back" href="../../index.html">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Home
+    </a>
+    <span class="topbar-sep">·</span>
+    <span class="topbar-title">Introduction</span>
+  </div>
+  <button class="topbar-menu-btn" id="topbar-menu-btn" aria-label="Open menu">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</nav>
+<div id="nav-overlay"></div>
+<div id="nav-dropdown">
+  <a class="nav-item" href="../../index.html">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home
+  </a>
+  <a class="nav-item" href="../../roadmap.html">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="12" y1="7" x2="12" y2="12"/><line x1="12" y1="12" x2="5" y2="17"/><line x1="12" y1="12" x2="19" y2="17"/></svg>
+    Roadmap
+  </a>
+  <div class="nav-divider"></div>
+  <a class="nav-item" href="https://stanliveops.github.io/" target="_blank" rel="noopener">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    All Tools
+  </a>
+  <a class="nav-item" href="../../settings.html">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Settings
+  </a>
+</div>
+
+<div class="hero">
+  <span class="hero-tag">Introduction</span>
+  <h1>Welcome to Live Ops Training</h1>
+  <p>This is your starting point. Learn what the Live Ops team does, how a live stream gets from a source to your viewers, and what you'll be practising in these modules.</p>
+</div>
+
+<div class="content">
+
+  <!-- What is Live Ops -->
+  <div class="section-card">
+    <div class="section-icon">📡</div>
+    <h2>What is Live Ops?</h2>
+    <p>
+      Live Ops (Live Operations) is the team responsible for monitoring and managing live streams in real time.
+      When a live event starts — whether it's a sports match, a gaming tournament, or a broadcast — Live Ops ensures
+      the stream reaches viewers without interruption.
+    </p>
+    <p>
+      This involves watching bitrate graphs, responding to source failures, switching between backup sources,
+      communicating through internal channels, and escalating issues before viewers notice anything went wrong.
+    </p>
+  </div>
+
+  <!-- Your responsibilities -->
+  <div class="section-card">
+    <div class="section-icon">🎯</div>
+    <h2>Your responsibilities</h2>
+    <ul>
+      <li><span class="li-dot"></span><span><strong style="color:var(--text-bright)">Monitor bitrates</strong> — Watch the incoming bitrate from the source encoder. A healthy stream stays within expected bounds. Drops or flatlines need immediate attention.</span></li>
+      <li><span class="li-dot"></span><span><strong style="color:var(--text-bright)">Start, delay, or abandon</strong> — When a stream is due to start, you decide: start it on schedule, hold it if the source isn't ready, or abandon if things look unrecoverable.</span></li>
+      <li><span class="li-dot"></span><span><strong style="color:var(--text-bright)">Coordinate via Slack</strong> — Communicate with producers, engineers, and backup teams in real time using structured Slack messages.</span></li>
+      <li><span class="li-dot"></span><span><strong style="color:var(--text-bright)">Switch to backup sources</strong> — If the primary source fails, you switch to a pre-configured backup to keep the stream alive.</span></li>
+      <li><span class="li-dot"></span><span><strong style="color:var(--text-bright)">Log and escalate</strong> — Document what happened, when, and why. Flag anything unusual for the engineering team.</span></li>
+    </ul>
+  </div>
+
+  <!-- Tools you'll use -->
+  <div class="section-card">
+    <div class="section-icon">🛠️</div>
+    <h2>Tools you'll use</h2>
+    <div class="role-grid">
+      <div class="role-card">
+        <div class="role-card-label">Monitoring</div>
+        <div class="role-card-title">AMPP</div>
+        <div class="role-card-desc">The platform that ingests, processes, and routes live streams. You'll watch bitrate graphs and manage jobs here.</div>
+      </div>
+      <div class="role-card">
+        <div class="role-card-label">Communication</div>
+        <div class="role-card-title">Slack</div>
+        <div class="role-card-desc">All real-time coordination happens in Slack. You'll post updates to dedicated live ops channels.</div>
+      </div>
+      <div class="role-card">
+        <div class="role-card-label">Scheduling</div>
+        <div class="role-card-title">Broadcast Calendar</div>
+        <div class="role-card-desc">Tells you what streams are scheduled, who the client is, and what sources and backups are configured.</div>
+      </div>
+      <div class="role-card">
+        <div class="role-card-label">Escalation</div>
+        <div class="role-card-title">Incident Tracker</div>
+        <div class="role-card-desc">Log incidents, tag severity, and hand off issues to engineering or NOC for further investigation.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- What's in the training -->
+  <div class="section-card">
+    <div class="section-icon">📚</div>
+    <h2>What's in this training</h2>
+    <p>Each module puts you in a realistic scenario. Here's what's coming:</p>
+    <div class="module-grid" style="margin-top:8px;">
+      <a class="module-item" href="../pipeline/pipeline.html">
+        <div class="module-item-num">1</div>
+        <div class="module-item-name">The Pipeline</div>
+      </a>
+      <a class="module-item" href="../bitrate/bitrate.html">
+        <div class="module-item-num">2</div>
+        <div class="module-item-name">Bitrates</div>
+      </a>
+      <div class="module-item" style="opacity:0.45;cursor:default;">
+        <div class="module-item-num">3</div>
+        <div class="module-item-name">VODs Basics</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="section-card" style="border-color:rgba(88,101,242,0.3); background: rgba(88,101,242,0.07);">
+    <h2>Ready to start?</h2>
+    <p>Head to the pipeline module to see how a live stream travels from source to screen — or jump straight into the bitrate simulator.</p>
+    <div class="cta-row">
+      <a class="btn-primary" href="../pipeline/pipeline.html">Go to The Pipeline &rarr;</a>
+      <a class="btn-secondary" href="../../index.html">Back to hub</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const theme = localStorage.getItem('trainingsim_theme') || 'dark';
+  if (theme === 'light') document.body.classList.add('light');
+
+  // ── Topbar nav menu ──
+  (function() {
+    const btn      = document.getElementById('topbar-menu-btn');
+    const overlay  = document.getElementById('nav-overlay');
+    if (!btn || !overlay) return;
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      overlay.classList.toggle('open');
+    });
+    overlay.addEventListener('click', () => overlay.classList.remove('open'));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.classList.remove('open'); });
+  })();
+</script>
+</body>
+</html>
